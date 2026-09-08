@@ -4,7 +4,7 @@ import "./WhatsappButton.css";
 export default function WhatsappButton() {
   return (
     <a
-      href={buildWhatsappLink("Olá! Vim pela loja SilMake e gostaria de saber mais.")}
+      href={buildWhatsappLink("Olá! Vim pela loja SilBeauty e gostaria de saber mais.")}
       target="_blank"
       rel="noopener noreferrer"
       className="whatsapp-btn"

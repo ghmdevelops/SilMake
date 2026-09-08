@@ -5,7 +5,7 @@ export default function PrivacyPolicy() {
   useSeo({
     title: "Política de Privacidade",
     description:
-      "Saiba como a SilMake coleta, usa e protege seus dados pessoais ao navegar e comprar em nossa loja.",
+      "Saiba como a SilBeauty coleta, usa e protege seus dados pessoais ao navegar e comprar em nossa loja.",
   });
 
   return (
@@ -15,7 +15,7 @@ export default function PrivacyPolicy() {
 
       <p>
         A sua privacidade é importante para nós. Esta página explica de forma simples quais
-        informações a SilMake coleta, como usamos esses dados e quais são os seus direitos.
+        informações a SilBeauty coleta, como usamos esses dados e quais são os seus direitos.
       </p>
 
       <h2>1. Quais dados coletamos</h2>
@@ -49,7 +49,7 @@ export default function PrivacyPolicy() {
       <h2>5. Contato</h2>
       <p>
         Em caso de dúvidas sobre esta política, entre em contato pelo e-mail{" "}
-        <a href="mailto:contato@silmake.com">contato@silmake.com</a>.
+        <a href="mailto:contato@silbeauty.com">contato@silbeauty.com</a>.
       </p>
     </div>
   );

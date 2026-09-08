@@ -7,7 +7,7 @@ import { translateAuthError } from "../utils/authErrors";
 import "./Auth.css";
 
 export default function Login() {
-  useSeo({ title: "Entrar", description: "Entre na sua conta SilMake." });
+  useSeo({ title: "Entrar", description: "Entre na sua conta SilBeauty." });
 
   const { login, loginWithGoogle, getRememberedEmail } = useAuth();
   const { showToast } = useToast();
@@ -54,7 +54,7 @@ export default function Login() {
     <div className="auth-page">
       <div className="auth-card">
         <h1>Entrar</h1>
-        <p className="auth-subtitle">Acesse sua conta na SilMake.</p>
+        <p className="auth-subtitle">Acesse sua conta na SilBeauty.</p>
 
         <button className="google-btn" type="button" onClick={handleGoogle} disabled={loading}>
           <svg width="18" height="18" viewBox="0 0 48 48">

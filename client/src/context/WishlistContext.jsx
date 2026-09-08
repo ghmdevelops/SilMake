@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 const WishlistContext = createContext(null);
-const STORAGE_KEY = "silmake_wishlist";
+const STORAGE_KEY = "silbeauty_wishlist";
 
 export function WishlistProvider({ children }) {
   const [items, setItems] = useState(() => {

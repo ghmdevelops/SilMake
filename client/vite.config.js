@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'SilMake - Sua Loja Online',
-        short_name: 'SilMake',
-        description: 'Produtos artesanais feitos com carinho, anunciados com estilo.',
+        name: 'SilBeauty - Sua Loja Online',
+        short_name: 'SilBeauty',
+        description: 'Beleza e cuidado em cada produto, com todo o carinho da SilBeauty.',
         theme_color: '#f7f7fa',
         background_color: '#f7f7fa',
         display: 'standalone',
@@ -48,7 +48,7 @@ export default defineConfig({
             urlPattern: /^https:\/\/.*\.(png|jpg|jpeg|webp|gif)$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'silmake-images',
+              cacheName: 'silbeauty-images',
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 dias

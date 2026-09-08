@@ -6,6 +6,7 @@ import { useOrders } from "../hooks/useOrders";
 import { saveUserProfile } from "../api/userProfile";
 import { useToast } from "../context/ToastContext";
 import { useSeo } from "../hooks/useSeo";
+import { getOrderStatus, ORDER_STATUS_LABELS } from "../utils/orderStatus";
 import "./Profile.css";
 
 function formatPrice(value) {
@@ -25,6 +26,14 @@ function formatDate(timestamp) {
   });
 }
 
+function formatAddress(address) {
+  if (!address || !address.street) return "";
+  const { street, number, complement, neighborhood, city, state, zipCode } = address;
+  const line1 = [street, number].filter(Boolean).join(", ");
+  const line2 = [neighborhood, city, state].filter(Boolean).join(" - ");
+  return [line1, complement, line2, zipCode].filter(Boolean).join(" • ");
+}
+
 const emptyAddress = {
   zipCode: "",
   street: "",
@@ -36,7 +45,7 @@ const emptyAddress = {
 };
 
 export default function Profile() {
-  useSeo({ title: "Meu Perfil", description: "Gerencie seus dados e veja seus pedidos na SilMake." });
+  useSeo({ title: "Meu Perfil", description: "Gerencie seus dados e veja seus pedidos na SilBeauty." });
 
   const { currentUser, loading: authLoading, updateUserProfile } = useAuth();
   const { profile } = useUserProfile(currentUser?.uid);
@@ -228,12 +237,30 @@ export default function Profile() {
       )}
 
       <div className="orders-list">
-        {orders.map((order) => (
+        {orders.map((order) => {
+          const status = getOrderStatus(order);
+          return (
           <div className="order-card" key={order.id}>
             <div className="order-card-header">
-              <span className="order-date">{formatDate(order.createdAt)}</span>
-              <span className="order-status">Fechado</span>
+              <div>
+                <span className="order-customer">
+                  {order.orderNumber && <span className="order-number">#{order.orderNumber}</span>}
+                  {order.customerName || currentUser.displayName || currentUser.email}
+                </span>
+                <span className="order-date">{formatDate(order.createdAt)}</span>
+              </div>
+              <span className={`order-status status-${status}`}>{ORDER_STATUS_LABELS[status]}</span>
             </div>
+
+            {status === "overdue" && (
+              <p className="order-overdue-notice">
+                ⚠️ Ainda não identificamos o pagamento deste pedido. Fale com a gente pelo WhatsApp.
+              </p>
+            )}
+            {status === "closed" && (
+              <p className="order-closed-notice">Este pedido foi encerrado por falta de pagamento.</p>
+            )}
+
             <ul className="order-items">
               {order.items?.map((item, i) => (
                 <li key={i}>
@@ -241,12 +268,25 @@ export default function Profile() {
                 </li>
               ))}
             </ul>
+
+            {formatAddress(order.address) && (
+              <p className="order-address">📍 {formatAddress(order.address)}</p>
+            )}
+
+            {order.trackingCode && (
+              <div className="order-tracking">
+                <span>📦 Código de rastreio</span>
+                <strong>{order.trackingCode}</strong>
+              </div>
+            )}
+
             <div className="order-total">
               <span>Total</span>
               <strong>{formatPrice(order.total)}</strong>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

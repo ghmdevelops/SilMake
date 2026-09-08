@@ -7,7 +7,7 @@ import { translateAuthError } from "../utils/authErrors";
 import "./Auth.css";
 
 export default function Signup() {
-  useSeo({ title: "Criar conta", description: "Crie sua conta na SilMake." });
+  useSeo({ title: "Criar conta", description: "Crie sua conta na SilBeauty." });
 
   const { signup, loginWithGoogle } = useAuth();
   const { showToast } = useToast();
@@ -32,7 +32,7 @@ export default function Signup() {
     setLoading(true);
     try {
       await signup(email, password, name);
-      showToast("Conta criada com sucesso! Bem-vindo(a) à SilMake.", { type: "success" });
+      showToast("Conta criada com sucesso! Bem-vindo(a) à SilBeauty.", { type: "success" });
       navigate("/", { replace: true });
     } catch (err) {
       setError(translateAuthError(err));

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 const CartContext = createContext(null);
-const STORAGE_KEY = "silmake_cart";
+const STORAGE_KEY = "silbeauty_cart";
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {

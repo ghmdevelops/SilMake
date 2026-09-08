@@ -4,7 +4,7 @@ import "./StaticPage.css";
 export default function Terms() {
   useSeo({
     title: "Termos de Uso",
-    description: "Confira os termos e condições de uso da loja SilMake.",
+    description: "Confira os termos e condições de uso da loja SilBeauty.",
   });
 
   return (
@@ -13,13 +13,13 @@ export default function Terms() {
       <p className="static-page-subtitle">Última atualização: {new Date().toLocaleDateString("pt-BR")}</p>
 
       <p>
-        Ao acessar e usar o site da SilMake, você concorda com os termos descritos abaixo. Leia
+        Ao acessar e usar o site da SilBeauty, você concorda com os termos descritos abaixo. Leia
         com atenção antes de realizar uma compra.
       </p>
 
       <h2>1. Sobre a loja</h2>
       <p>
-        A SilMake é uma loja online de produtos artesanais e feitos com carinho. As informações
+        A SilBeauty é uma loja online de produtos artesanais e feitos com carinho. As informações
         de produtos (fotos, descrições e preços) são de responsabilidade da loja e podem ser
         atualizadas a qualquer momento.
       </p>
@@ -34,7 +34,7 @@ export default function Terms() {
       <h2>3. Uso do site</h2>
       <ul>
         <li>Não é permitido usar o site para fins ilegais ou não autorizados.</li>
-        <li>As imagens e textos do site são de propriedade da SilMake e não devem ser copiados sem autorização.</li>
+        <li>As imagens e textos do site são de propriedade da SilBeauty e não devem ser copiados sem autorização.</li>
       </ul>
 
       <h2>4. Alterações</h2>
@@ -46,7 +46,7 @@ export default function Terms() {
       <h2>5. Contato</h2>
       <p>
         Dúvidas sobre estes termos? Fale com a gente em{" "}
-        <a href="mailto:contato@silmake.com">contato@silmake.com</a>.
+        <a href="mailto:contato@silbeauty.com">contato@silbeauty.com</a>.
       </p>
     </div>
   );

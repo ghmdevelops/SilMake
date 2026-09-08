@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useProducts } from "../hooks/useProducts";
 import { createProduct, updateProduct, deleteProduct, fileToBase64 } from "../api/products";
 import { useToast } from "../context/ToastContext";
+import AdminOrders from "./AdminOrders";
 import "./Admin.css";
 
 const emptyForm = {
@@ -20,6 +21,7 @@ function formatPrice(value) {
 }
 
 export default function Admin() {
+  const [tab, setTab] = useState("produtos"); // "produtos" | "pedidos"
   const { products, loading } = useProducts();
   const { showToast } = useToast();
   const [form, setForm] = useState(emptyForm);
@@ -119,8 +121,27 @@ export default function Admin() {
   return (
     <div className="admin">
       <h1>Painel administrativo</h1>
-      <p className="admin-subtitle">Cadastre, edite ou remova produtos da sua loja.</p>
+      <p className="admin-subtitle">Gerencie produtos e acompanhe os pedidos da sua loja.</p>
 
+      <div className="admin-tabs">
+        <button
+          className={`admin-tab ${tab === "produtos" ? "active" : ""}`}
+          onClick={() => setTab("produtos")}
+        >
+          Produtos
+        </button>
+        <button
+          className={`admin-tab ${tab === "pedidos" ? "active" : ""}`}
+          onClick={() => setTab("pedidos")}
+        >
+          Pedidos
+        </button>
+      </div>
+
+      {tab === "pedidos" ? (
+        <AdminOrders />
+      ) : (
+        <>
       <form className="admin-form" onSubmit={handleSubmit}>
         <div className="admin-form-grid">
           <label>
@@ -276,6 +297,8 @@ export default function Admin() {
           </div>
         ))}
       </div>
+        </>
+      )}
     </div>
   );
 }

@@ -8,9 +8,9 @@ export default function Footer() {
         <div className="footer-grid">
           <div className="footer-col footer-brand-col">
             <Link to="/" className="footer-brand">
-              Sil<span>Make</span>
+              Sil<span>Beauty</span>
             </Link>
-            <p>Produtos feitos com carinho, anunciados com estilo.</p>
+            <p>Beleza e cuidado em cada produto, com todo o carinho da SilBeauty.</p>
           </div>
 
           <div className="footer-col">
@@ -23,7 +23,7 @@ export default function Footer() {
           <div className="footer-col">
             <h4>Ajuda</h4>
             <Link to="/faq">Perguntas frequentes</Link>
-            <a href="mailto:contato@silmake.com">Fale conosco</a>
+            <a href="mailto:contato@silbeauty.com">Fale conosco</a>
           </div>
 
           <div className="footer-col">
@@ -33,7 +33,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <p className="footer-year">© {new Date().getFullYear()} SilMake. Todos os direitos reservados.</p>
+        <p className="footer-year">© {new Date().getFullYear()} SilBeauty. Todos os direitos reservados.</p>
       </div>
     </footer>
   );

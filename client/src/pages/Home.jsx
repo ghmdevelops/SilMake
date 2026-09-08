@@ -20,7 +20,7 @@ function AnimatedText({ text, startDelay = 0, className = "" }) {
 export default function Home() {
   useSeo({
     description:
-      "Conheça a SilMake: produtos artesanais feitos com carinho. Velas, cerâmica, acessórios e muito mais.",
+      "Conheça a SilBeauty: produtos artesanais feitos com carinho. Velas, cerâmica, acessórios e muito mais.",
   });
 
   const { products, loading } = useProducts();
@@ -67,6 +67,7 @@ export default function Home() {
     });
 
   const firstPart = "Bem-vindo à Sil";
+  const secondPart = "Beauty";
 
   return (
     <div className="home">
@@ -80,9 +81,9 @@ export default function Home() {
         <span className="hero-badge">✨ Novidades toda semana</span>
         <h1 className="hero-title">
           <AnimatedText text={firstPart} />
-          <AnimatedText text="Make" startDelay={firstPart.length * 0.035} className="gradient-letter" />
+          <AnimatedText text={secondPart} startDelay={firstPart.length * 0.035} className="gradient-letter" />
         </h1>
-        <p className="hero-subtitle">Produtos feitos com carinho, anunciados com estilo.</p>
+        <p className="hero-subtitle">Realce sua beleza com produtos feitos com carinho, do jeito que você merece.</p>
       </section>
 
       <div className="home-filters">

@@ -23,7 +23,7 @@ export default function ProductDetail() {
 
   useSeo({
     title: product?.name,
-    description: product?.description || `Confira ${product?.name || "este produto"} na loja SilMake.`,
+    description: product?.description || `Confira ${product?.name || "este produto"} na loja SilBeauty.`,
   });
 
   if (loading) return <p className="detail-status">Carregando...</p>;

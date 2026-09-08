@@ -8,7 +8,7 @@ import "./Favorites.css";
 export default function Favorites() {
   useSeo({
     title: "Favoritos",
-    description: "Veja os produtos que você salvou como favoritos na SilMake.",
+    description: "Veja os produtos que você salvou como favoritos na SilBeauty.",
   });
 
   const { items } = useWishlist();

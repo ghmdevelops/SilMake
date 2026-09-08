@@ -12,7 +12,50 @@
 
 .admin-subtitle {
   color: var(--text-muted);
-  margin-bottom: 28px;
+  margin-bottom: 20px;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-tab {
+  background: none;
+  border: none;
+  padding: 10px 4px;
+  margin-right: 20px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  font-family: inherit;
+}
+
+.admin-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent-gradient);
+  transition: right 0.2s ease;
+}
+
+.admin-tab:hover {
+  color: var(--text-strong);
+}
+
+.admin-tab.active {
+  color: var(--text-strong);
+}
+
+.admin-tab.active::after {
+  right: 0;
 }
 
 .admin-form {

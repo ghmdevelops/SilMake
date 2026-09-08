@@ -8,7 +8,7 @@ import "./Auth.css";
 export default function ForgotPassword() {
   useSeo({
     title: "Recuperar senha",
-    description: "Recupere o acesso à sua conta SilMake.",
+    description: "Recupere o acesso à sua conta SilBeauty.",
   });
 
   const { resetPassword } = useAuth();

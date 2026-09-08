@@ -25,7 +25,7 @@ export default function Navbar() {
     <header className="navbar">
       <div className="navbar-inner">
         <Link to="/" className="navbar-brand" onClick={() => setMenuOpen(false)}>
-          Sil<span>Make</span>
+          Sil<span>Beauty</span>
         </Link>
 
         <nav className={`navbar-links ${menuOpen ? "open" : ""}`}>

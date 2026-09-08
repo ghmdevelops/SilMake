@@ -15,6 +15,16 @@ function formatPrice(value) {
   });
 }
 
+function formatDateTime(timestamp) {
+  return new Date(timestamp).toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function formatAddress(address) {
   if (!address) return "";
   const { street, number, complement, neighborhood, city, state, zipCode } = address;
@@ -25,7 +35,7 @@ function formatAddress(address) {
 }
 
 export default function Cart() {
-  useSeo({ title: "Carrinho", description: "Revise os produtos do seu carrinho na SilMake." });
+  useSeo({ title: "Carrinho", description: "Revise os produtos do seu carrinho na SilBeauty." });
 
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
   const { showToast } = useToast();
@@ -52,12 +62,33 @@ export default function Cart() {
       return;
     }
 
+    const now = Date.now();
     const lines = items.map(
       (item) =>
         `• ${item.name} (x${item.quantity}) — ${formatPrice(item.price * item.quantity)}`
     );
+
+    let orderNumber = "";
+    try {
+      orderNumber = await createOrder(currentUser.uid, {
+        items: items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        total: totalPrice,
+        address: profile.address,
+        customerName: currentUser.displayName || "",
+        customerEmail: currentUser.email || "",
+        createdAt: now,
+      });
+    } catch (err) {
+      console.error("Erro ao salvar histórico do pedido:", err);
+    }
+
     const message = [
-      "Olá! Gostaria de finalizar este pedido na SilMake:",
+      `Olá! Gostaria de finalizar o pedido${orderNumber ? ` #${orderNumber}` : ""} na SilBeauty:`,
       "",
       ...lines,
       "",
@@ -67,29 +98,19 @@ export default function Cart() {
       address,
       "",
       `Nome: ${currentUser.displayName || currentUser.email}`,
+      `Data do pedido: ${formatDateTime(now)}`,
     ].join("\n");
-
-    try {
-      await createOrder(currentUser.uid, {
-        items: items.map((item) => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-        })),
-        total: totalPrice,
-        address: profile.address,
-      });
-    } catch (err) {
-      console.error("Erro ao salvar histórico do pedido:", err);
-    }
 
     window.open(buildWhatsappLink(message), "_blank", "noopener,noreferrer");
 
-    showToast("Você será redirecionado para o WhatsApp para concluir o pedido", {
-      type: "info",
-      duration: 4000,
-    });
+    showToast(
+      orderNumber
+        ? `Pedido #${orderNumber} enviado! Você será redirecionado para o WhatsApp.`
+        : "Você será redirecionado para o WhatsApp para concluir o pedido",
+      { type: "info", duration: 4500 }
+    );
+
+    clearCart();
   }
 
   if (items.length === 0) {

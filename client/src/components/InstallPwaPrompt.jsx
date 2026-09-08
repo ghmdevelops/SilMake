@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./InstallPwaPrompt.css";
 
-const STORAGE_KEY = "silmake_install_dismissed";
+const STORAGE_KEY = "silbeauty_install_dismissed";
 
 export default function InstallPwaPrompt() {
   const [deferredEvent, setDeferredEvent] = useState(null);
@@ -38,7 +38,7 @@ export default function InstallPwaPrompt() {
     <div className="install-prompt">
       <span className="install-prompt-icon">📲</span>
       <div className="install-prompt-text">
-        <strong>Instale a SilMake</strong>
+        <strong>Instale a SilBeauty</strong>
         <p>Adicione o app na sua tela inicial para acesso rápido, mesmo offline.</p>
       </div>
       <div className="install-prompt-actions">

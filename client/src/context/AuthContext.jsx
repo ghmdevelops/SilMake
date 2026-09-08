@@ -14,7 +14,7 @@ import {
 import { auth, googleProvider } from "../firebase";
 import { ADMIN_EMAILS } from "../config";
 
-const REMEMBER_EMAIL_KEY = "silmake_remembered_email";
+const REMEMBER_EMAIL_KEY = "silbeauty_remembered_email";
 
 const AuthContext = createContext(null);
 

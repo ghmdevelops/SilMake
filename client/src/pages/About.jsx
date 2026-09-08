@@ -6,18 +6,18 @@ export default function About() {
   useSeo({
     title: "Sobre nós",
     description:
-      "Conheça a história da SilMake, uma loja online dedicada a produtos artesanais feitos com carinho.",
+      "Conheça a história da SilBeauty, uma loja online dedicada a produtos artesanais feitos com carinho.",
   });
 
   return (
     <div className="static-page">
       <h1>
-        Sobre a Sil<span style={{ color: "var(--accent-1)" }}>Make</span>
+        Sobre a Sil<span style={{ color: "var(--accent-1)" }}>Beauty</span>
       </h1>
-      <p className="static-page-subtitle">Produtos feitos com carinho, anunciados com estilo.</p>
+      <p className="static-page-subtitle">Beleza e cuidado em cada produto, com todo o carinho da SilBeauty.</p>
 
       <p>
-        A SilMake nasceu da vontade de transformar trabalho manual e dedicação em produtos que
+        A SilBeauty nasceu da vontade de transformar trabalho manual e dedicação em produtos que
         encantam. Cada item da nossa loja é pensado nos mínimos detalhes, com muito carinho na
         confecção e no acabamento.
       </p>

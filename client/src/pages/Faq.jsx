@@ -26,12 +26,12 @@ const faqs = [
   {
     question: "Os produtos são realmente artesanais?",
     answer:
-      "Sim, todos os produtos da SilMake são feitos à mão ou personalizados com bastante cuidado e atenção aos detalhes.",
+      "Sim, todos os produtos da SilBeauty são feitos à mão ou personalizados com bastante cuidado e atenção aos detalhes.",
   },
   {
     question: "Como entro em contato com a loja?",
     answer:
-      "Você pode enviar um e-mail para contato@silmake.com ou usar os canais de contato informados no rodapé do site.",
+      "Você pode enviar um e-mail para contato@silbeauty.com ou usar os canais de contato informados no rodapé do site.",
   },
 ];
 
@@ -39,7 +39,7 @@ export default function Faq() {
   useSeo({
     title: "Perguntas Frequentes",
     description:
-      "Tire suas dúvidas sobre compras, entregas, trocas e pagamentos na loja SilMake.",
+      "Tire suas dúvidas sobre compras, entregas, trocas e pagamentos na loja SilBeauty.",
   });
 
   const [openIndex, setOpenIndex] = useState(0);

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./CookieConsent.css";
 
-const STORAGE_KEY = "silmake_cookie_consent";
+const STORAGE_KEY = "silbeauty_cookie_consent";
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
@@ -34,7 +34,7 @@ export default function CookieConsent() {
         <div className="cookie-text">
           <strong>Nós usamos cookies</strong>
           <p>
-            Usamos cookies para melhorar sua experiência na SilMake, lembrar o
+            Usamos cookies para melhorar sua experiência na SilBeauty, lembrar o
             seu carrinho e entender como você usa a loja. Ao continuar
             navegando, você concorda com o uso de cookies. Saiba mais na nossa{" "}
             <Link to="/politica-de-privacidade">Política de Privacidade</Link>.

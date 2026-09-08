@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const SITE_NAME = "SilMake";
+const SITE_NAME = "SilBeauty";
 
 function setMetaTag(name, content, attr = "name") {
   if (!content) return;
