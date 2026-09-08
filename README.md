@@ -54,7 +54,7 @@ O site agora tem login de verdade:
 - **Checkout**: ao clicar em "Finalizar compra", o cliente precisa estar logado e ter um endereço salvo no perfil — só então é redirecionado ao WhatsApp (já com a lista de produtos, total e endereço preenchidos).
 - **Histórico de pedidos**: cada pedido finalizado fica salvo no perfil do cliente (`/perfil`), marcado como "Fechado".
 - **Admin**: o acesso ao `/admin` agora depende de login com uma conta cujo e-mail esteja na lista `ADMIN_EMAILS` em `client/src/config.js` (hoje configurado com `gehaime43@gmail.com`).
-- **Manter conectado**: na tela de login, o cliente pode marcar "Manter conectado" (sessão permanece mesmo fechando o navegador) ou deixar desmarcado (sai automaticamente ao fechar a aba).
+- **Manter conectado**: na tela de login, o cliente pode marcar "Manter conectado" (sessão permanece mesmo fechando o navegador) ou deixar desmarcado (sai automaticamente ao fechar a aba). a
 
 ### ⚠️ Passo obrigatório no Firebase Console
 
