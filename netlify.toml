@@ -1,0 +1,19 @@
+[build]
+  base = "client"
+  command = "npm run build"
+  publish = "dist"
+
+# Necessário para o React Router funcionar em rotas diretas (ex: /produto/xyz)
+# redirecionando qualquer caminho para o index.html do app.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Evita que o navegador guarde uma cópia em cache do HTML principal,
+# reforçando que páginas protegidas (ex: /perfil) sejam sempre revalidadas
+# ao usar o botão "voltar" depois de sair da conta.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-store, must-revalidate"

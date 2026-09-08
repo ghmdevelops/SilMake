@@ -1,0 +1,233 @@
+.admin {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.admin h1 {
+  color: var(--text-strong);
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.admin-subtitle {
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.admin-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow-md);
+}
+
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+}
+
+.image-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.image-field-label {
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.image-mode-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.image-mode-toggle button {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.15s ease;
+}
+
+.image-mode-toggle button.active {
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  color: #1a1a1a;
+  font-weight: 700;
+  border-color: transparent;
+}
+
+.dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.dropzone:hover,
+.dropzone.active {
+  border-color: var(--accent-2);
+  background: rgba(255, 154, 86, 0.06);
+}
+
+.dropzone-icon {
+  font-size: 1.3rem;
+}
+
+.dropzone-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.image-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-error {
+  color: var(--accent-1);
+  font-size: 0.9rem;
+}
+
+.admin-form-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.admin-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 40px 0 28px;
+}
+
+.admin h2 {
+  color: var(--text-strong);
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+}
+
+.admin-status {
+  color: var(--text-muted);
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-list-item {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  transition: border-color 0.2s ease;
+}
+
+.admin-list-item:hover {
+  border-color: var(--border-strong);
+}
+
+.admin-list-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.admin-list-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-list-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+.admin-list-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-list-info strong {
+  color: var(--text-strong);
+}
+
+.admin-list-info span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.admin-list-category {
+  color: var(--accent-2) !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase;
+}
+
+.admin-list-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-list-item {
+    grid-template-columns: 50px 1fr;
+    grid-template-areas:
+      "img info"
+      "actions actions";
+  }
+  .admin-list-actions {
+    grid-area: actions;
+    margin-top: 8px;
+  }
+}

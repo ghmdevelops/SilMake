@@ -1,0 +1,122 @@
+.product-detail {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.detail-image {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+.detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+}
+
+.detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-category {
+  color: var(--accent-2);
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.detail-info h1 {
+  color: var(--text-strong);
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.detail-price {
+  color: var(--accent-2);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.detail-description {
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.quantity-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+}
+
+.quantity-picker button {
+  background: none;
+  border: none;
+  color: var(--text-strong);
+  font-size: 1.1rem;
+  cursor: pointer;
+  width: 24px;
+}
+
+.quantity-picker span {
+  color: var(--text-strong);
+  min-width: 20px;
+  text-align: center;
+}
+
+.detail-back {
+  margin-top: 20px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.detail-back:hover {
+  color: var(--text-strong);
+}
+
+.detail-status {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+@media (max-width: 700px) {
+  .product-detail {
+    grid-template-columns: 1fr;
+  }
+}
