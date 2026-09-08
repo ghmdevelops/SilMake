@@ -4,8 +4,8 @@ import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { useSeo } from "../hooks/useSeo";
-import { buildWhatsappLink } from "../config";
 import { createOrder } from "../api/orders";
+import { sendTelegramNotification } from "../utils/telegram";
 import "./Cart.css";
 
 function formatPrice(value) {
@@ -88,7 +88,7 @@ export default function Cart() {
     }
 
     const message = [
-      `Olá! Gostaria de finalizar o pedido${orderNumber ? ` #${orderNumber}` : ""} na SilBeauty:`,
+      `🛍️ Novo pedido${orderNumber ? ` #${orderNumber}` : ""} na SilBeauty!`,
       "",
       ...lines,
       "",
@@ -97,17 +97,24 @@ export default function Cart() {
       "Endereço de entrega:",
       address,
       "",
-      `Nome: ${currentUser.displayName || currentUser.email}`,
+      `Cliente: ${currentUser.displayName || currentUser.email}`,
+      `E-mail: ${currentUser.email}`,
       `Data do pedido: ${formatDateTime(now)}`,
     ].join("\n");
 
-    window.open(buildWhatsappLink(message), "_blank", "noopener,noreferrer");
+    // Envia o aviso direto pro seu Telegram, sem abrir nada nem redirecionar
+    // o cliente para lugar nenhum.
+    try {
+      await sendTelegramNotification(message);
+    } catch (err) {
+      console.error("Erro ao enviar notificação do pedido:", err);
+    }
 
     showToast(
       orderNumber
-        ? `Pedido #${orderNumber} enviado! Você será redirecionado para o WhatsApp.`
-        : "Você será redirecionado para o WhatsApp para concluir o pedido",
-      { type: "info", duration: 4500 }
+        ? `Pedido #${orderNumber} enviado com sucesso! Em breve entraremos em contato.`
+        : "Pedido enviado com sucesso! Em breve entraremos em contato.",
+      { type: "success", duration: 4500 }
     );
 
     clearCart();
@@ -147,19 +154,21 @@ export default function Cart() {
               <p className="cart-item-price">{formatPrice(item.price)}</p>
             </div>
 
-            <div className="quantity-picker">
-              <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
-              <span>{item.quantity}</span>
-              <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+            <div className="cart-item-actions">
+              <div className="quantity-picker">
+                <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                <span>{item.quantity}</span>
+                <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+              </div>
+
+              <p className="cart-item-subtotal">
+                {formatPrice(item.price * item.quantity)}
+              </p>
+
+              <button className="cart-item-remove" onClick={() => removeFromCart(item.id)}>
+                ✕
+              </button>
             </div>
-
-            <p className="cart-item-subtotal">
-              {formatPrice(item.price * item.quantity)}
-            </p>
-
-            <button className="cart-item-remove" onClick={() => removeFromCart(item.id)}>
-              ✕
-            </button>
           </div>
         ))}
       </div>

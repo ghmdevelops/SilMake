@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
 import { useWishlist } from "../context/WishlistContext";
+import { isOutOfStock, isLowStock } from "../utils/stock";
 import "./ProductCard.css";
 
 function formatPrice(value) {
@@ -16,8 +17,11 @@ export default function ProductCard({ product }) {
   const { showToast } = useToast();
   const { isFavorite, toggleFavorite } = useWishlist();
   const favorite = isFavorite(product.id);
+  const outOfStock = isOutOfStock(product);
+  const lowStock = isLowStock(product);
 
   function handleAdd() {
+    if (outOfStock) return;
     addToCart(product, 1);
     showToast(`${product.name} adicionado ao carrinho`, { type: "success" });
   }
@@ -31,7 +35,7 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <div className="product-card">
+    <div className={`product-card ${outOfStock ? "out-of-stock" : ""}`}>
       <div className="product-card-image-wrap">
         <Link to={`/produto/${product.id}`} className="product-card-image-link">
           {product.image ? (
@@ -41,6 +45,11 @@ export default function ProductCard({ product }) {
           )}
           <span className="product-card-overlay">Ver detalhes</span>
         </Link>
+
+        {outOfStock && <span className="product-card-badge out">Esgotado</span>}
+        {!outOfStock && lowStock && (
+          <span className="product-card-badge low">Últimas {product.stock}!</span>
+        )}
 
         <button
           className={`favorite-btn ${favorite ? "active" : ""}`}
@@ -59,8 +68,16 @@ export default function ProductCard({ product }) {
         </Link>
         <p className="product-card-price">{formatPrice(product.price)}</p>
 
-        <button className="btn btn-primary product-card-btn" onClick={handleAdd}>
-          <span>+</span> Adicionar
+        <button
+          className="btn btn-primary product-card-btn"
+          onClick={handleAdd}
+          disabled={outOfStock}
+        >
+          {outOfStock ? "Indisponível" : (
+            <>
+              <span>+</span> Adicionar
+            </>
+          )}
         </button>
       </div>
     </div>

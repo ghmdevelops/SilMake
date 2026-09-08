@@ -1,21 +1,43 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useProducts } from "../hooks/useProducts";
 import { useSeo } from "../hooks/useSeo";
 import ProductCard from "../components/ProductCard";
 import ProductSkeleton from "../components/ProductSkeleton";
+import PromoCarousel from "../components/PromoCarousel";
+import NewArrivals from "../components/NewArrivals";
 import "./Home.css";
 
-function AnimatedText({ text, startDelay = 0, className = "" }) {
-  return text.split("").map((char, i) => (
-    <span
-      key={i}
-      className={`letter ${className}`}
-      style={{ animationDelay: `${startDelay + i * 0.035}s` }}
-    >
-      {char === " " ? "\u00A0" : char}
-    </span>
-  ));
-}
+// Produtos fictícios só para pré-visualizar o carrossel de promoções
+// quando ainda não existe nenhum produto real marcado como promoção.
+// Assim que você marcar um produto de verdade como "Promoção da semana"
+// no admin, esses exemplos somem automaticamente e o carrossel passa a
+// mostrar os produtos reais.
+const DEMO_PROMO_PRODUCTS = [
+  {
+    id: "demo-1",
+    name: "Batom Matte Rosa Nude (exemplo)",
+    price: 39.9,
+    category: "Maquiagem",
+    description: "Imagem de exemplo — cadastre um produto real e marque como promoção para substituir.",
+    image: "https://picsum.photos/seed/silbeauty-demo1/700/700",
+  },
+  {
+    id: "demo-2",
+    name: "Paleta de Sombras (exemplo)",
+    price: 79.9,
+    category: "Maquiagem",
+    description: "Imagem de exemplo — cadastre um produto real e marque como promoção para substituir.",
+    image: "https://picsum.photos/seed/silbeauty-demo2/700/700",
+  },
+  {
+    id: "demo-3",
+    name: "Perfume Floral (exemplo)",
+    price: 129.9,
+    category: "Perfumaria",
+    description: "Imagem de exemplo — cadastre um produto real e marque como promoção para substituir.",
+    image: "https://picsum.photos/seed/silbeauty-demo3/700/700",
+  },
+];
 
 export default function Home() {
   useSeo({
@@ -29,22 +51,10 @@ export default function Home() {
   const [sortBy, setSortBy] = useState("recent");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [scrollY, setScrollY] = useState(0);
-  const ticking = useRef(false);
 
-  useEffect(() => {
-    function onScroll() {
-      if (!ticking.current) {
-        window.requestAnimationFrame(() => {
-          setScrollY(window.scrollY);
-          ticking.current = false;
-        });
-        ticking.current = true;
-      }
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const realPromoProducts = useMemo(() => products.filter((p) => p.promotion), [products]);
+  const promoProducts = realPromoProducts.length > 0 ? realPromoProducts : DEMO_PROMO_PRODUCTS;
+  const isDemoPromo = realPromoProducts.length === 0;
 
   const categories = useMemo(() => {
     const set = new Set(products.map((p) => p.category).filter(Boolean));
@@ -66,25 +76,11 @@ export default function Home() {
       return (b.createdAt || 0) - (a.createdAt || 0);
     });
 
-  const firstPart = "Bem-vindo à Sil";
-  const secondPart = "Beauty";
-
   return (
     <div className="home">
-      <section
-        className="hero"
-        style={{
-          transform: `translateY(${scrollY * 0.3}px)`,
-          opacity: Math.max(1 - scrollY / 380, 0),
-        }}
-      >
-        <span className="hero-badge">✨ Novidades toda semana</span>
-        <h1 className="hero-title">
-          <AnimatedText text={firstPart} />
-          <AnimatedText text={secondPart} startDelay={firstPart.length * 0.035} className="gradient-letter" />
-        </h1>
-        <p className="hero-subtitle">Realce sua beleza com produtos feitos com carinho, do jeito que você merece.</p>
-      </section>
+      {!loading && <PromoCarousel products={promoProducts} demo={isDemoPromo} />}
+
+      {!loading && <NewArrivals products={products} />}
 
       <div className="home-filters">
         <div className="search-wrap">

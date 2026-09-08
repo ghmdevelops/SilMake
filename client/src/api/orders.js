@@ -1,11 +1,13 @@
 import { db } from "../firebase";
 import { ref, push, set, update } from "firebase/database";
 
-// Gera um número de pedido curto e fácil de falar/digitar (ex: "A3F92K"),
-// só para referência entre cliente e loja — não precisa ser único no mundo,
-// só o suficiente para não repetir na prática.
+// Gera um número de pedido com 12 dígitos numéricos (ex: "202609081234"),
+// fácil de buscar tanto pelo cliente quanto direto no banco de dados.
+// Não precisa ser único no mundo, só o suficiente para não repetir na prática.
 function generateOrderNumber() {
-  return Date.now().toString(36).slice(-6).toUpperCase();
+  const timePart = Date.now().toString().slice(-8); // 8 últimos dígitos do horário
+  const randomPart = Math.floor(1000 + Math.random() * 9000).toString(); // 4 dígitos aleatórios
+  return timePart + randomPart;
 }
 
 // Registra um pedido feito pelo cliente logado, para aparecer no histórico do

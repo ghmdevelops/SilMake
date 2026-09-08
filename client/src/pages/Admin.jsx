@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useProducts } from "../hooks/useProducts";
 import { createProduct, updateProduct, deleteProduct, fileToBase64 } from "../api/products";
+import { Link } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
 import AdminOrders from "./AdminOrders";
 import "./Admin.css";
@@ -11,6 +12,8 @@ const emptyForm = {
   category: "",
   description: "",
   image: "",
+  promotion: false,
+  stock: "",
 };
 
 function formatPrice(value) {
@@ -34,6 +37,10 @@ export default function Admin() {
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function handleDisplayChange(e) {
+    setForm((prev) => ({ ...prev, promotion: e.target.value === "promotion" }));
   }
 
   async function loadImageFile(file) {
@@ -69,6 +76,8 @@ export default function Admin() {
       category: product.category || "",
       description: product.description || "",
       image: product.image || "",
+      promotion: !!product.promotion,
+      stock: product.stock ?? "",
     });
     setEditingId(product.id);
     setImageMode(product.image?.startsWith("data:") ? "upload" : "url");
@@ -99,6 +108,8 @@ export default function Admin() {
         category: form.category.trim(),
         description: form.description.trim(),
         image: form.image.trim(),
+        promotion: !!form.promotion,
+        stock: form.stock === "" ? null : Math.max(0, Number(form.stock)),
       };
 
       if (editingId) {
@@ -136,6 +147,17 @@ export default function Admin() {
         >
           Pedidos
         </button>
+
+        {tab === "pedidos" && (
+          <Link
+            to="/admin/pedidos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-ghost admin-open-tab-btn"
+          >
+            Abrir pedidos em nova aba ↗
+          </Link>
+        )}
       </div>
 
       {tab === "pedidos" ? (
@@ -170,6 +192,20 @@ export default function Admin() {
           </label>
 
           <label>
+            Estoque (unidades)
+            <input
+              className="input"
+              name="stock"
+              type="number"
+              min="0"
+              step="1"
+              value={form.stock}
+              onChange={handleChange}
+              placeholder="Deixe em branco = sem controle"
+            />
+          </label>
+
+          <label>
             Categoria
             <input
               className="input"
@@ -178,6 +214,18 @@ export default function Admin() {
               onChange={handleChange}
               placeholder="Ex: Decoração"
             />
+          </label>
+
+          <label>
+            Exibição na loja
+            <select
+              className="input"
+              value={form.promotion ? "promotion" : "normal"}
+              onChange={handleDisplayChange}
+            >
+              <option value="normal">Vitrine normal</option>
+              <option value="promotion">🔥 Promoção da semana</option>
+            </select>
           </label>
         </div>
 
@@ -282,9 +330,18 @@ export default function Admin() {
               )}
             </div>
             <div className="admin-list-info">
-              <strong>{product.name}</strong>
+              <strong>
+                {product.name}
+                {product.promotion && <span className="admin-list-promo-badge">🔥 Promoção</span>}
+                {product.stock === 0 && <span className="admin-list-stock-badge out">Esgotado</span>}
+              </strong>
               <span>{formatPrice(product.price)}</span>
               {product.category && <span className="admin-list-category">{product.category}</span>}
+              {typeof product.stock === "number" && (
+                <span className="admin-list-stock">
+                  {product.stock > 0 ? `${product.stock} em estoque` : "Sem estoque"}
+                </span>
+              )}
             </div>
             <div className="admin-list-actions">
               <button className="btn btn-ghost" onClick={() => handleEdit(product)}>

@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useProducts } from "../hooks/useProducts";
 import { useCart } from "../context/CartContext";
 import { useSeo } from "../hooks/useSeo";
+import { isOutOfStock, isLowStock, hasStockControl } from "../utils/stock";
 import "./ProductDetail.css";
 
 function formatPrice(value) {
@@ -39,7 +40,12 @@ export default function ProductDetail() {
     );
   }
 
+  const outOfStock = isOutOfStock(product);
+  const lowStock = isLowStock(product);
+  const maxQuantity = hasStockControl(product) ? Math.max(product.stock, 1) : Infinity;
+
   function handleAdd() {
+    if (outOfStock) return;
     addToCart(product, quantity);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -49,7 +55,7 @@ export default function ProductDetail() {
     <div className="product-detail">
       <div className="detail-image">
         {product.image ? (
-          <img src={product.image} alt={product.name} />
+          <img src={product.image} alt={product.name} className={outOfStock ? "is-out-of-stock" : ""} />
         ) : (
           <div className="detail-placeholder">Sem imagem</div>
         )}
@@ -59,16 +65,32 @@ export default function ProductDetail() {
         {product.category && <span className="detail-category">{product.category}</span>}
         <h1>{product.name}</h1>
         <p className="detail-price">{formatPrice(product.price)}</p>
+
+        {outOfStock && <p className="detail-stock-notice out">Produto indisponível no momento</p>}
+        {!outOfStock && lowStock && (
+          <p className="detail-stock-notice low">Últimas {product.stock} unidades em estoque!</p>
+        )}
+
         {product.description && <p className="detail-description">{product.description}</p>}
 
         <div className="detail-actions">
           <div className="quantity-picker">
-            <button onClick={() => setQuantity((q) => Math.max(1, q - 1))}>-</button>
+            <button
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              disabled={outOfStock}
+            >
+              -
+            </button>
             <span>{quantity}</span>
-            <button onClick={() => setQuantity((q) => q + 1)}>+</button>
+            <button
+              onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
+              disabled={outOfStock}
+            >
+              +
+            </button>
           </div>
-          <button className="btn btn-primary" onClick={handleAdd}>
-            {added ? "Adicionado! ✓" : "Adicionar ao carrinho"}
+          <button className="btn btn-primary" onClick={handleAdd} disabled={outOfStock}>
+            {outOfStock ? "Indisponível" : added ? "Adicionado! ✓" : "Adicionar ao carrinho"}
           </button>
         </div>
 

@@ -15,6 +15,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  position: relative;
 }
 
 .navbar-brand {
@@ -24,6 +26,7 @@
   color: var(--text-strong);
   text-decoration: none;
   letter-spacing: -0.03em;
+  flex-shrink: 0;
 }
 
 .navbar-brand span {
@@ -87,6 +90,37 @@
   text-align: center;
 }
 
+/* Ações sempre visíveis: carrinho e avatar/conta */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.navbar-cart-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  font-size: 1.05rem;
+  text-decoration: none;
+  color: var(--text-strong);
+}
+
+.navbar-cart-btn .cart-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 0.65rem;
+  padding: 1px 6px;
+}
+
 .user-menu {
   position: relative;
 }
@@ -113,6 +147,11 @@
   object-fit: cover;
 }
 
+.user-avatar-guest {
+  font-size: 1.1rem;
+  filter: grayscale(1) brightness(3);
+}
+
 .user-dropdown {
   position: absolute;
   top: calc(100% + 10px);
@@ -124,8 +163,9 @@
   padding: 8px;
   display: flex;
   flex-direction: column;
-  min-width: 170px;
+  min-width: 190px;
   animation: dropdown-in 0.15s ease;
+  z-index: 60;
 }
 
 @keyframes dropdown-in {
@@ -151,6 +191,9 @@
   border: none;
   cursor: pointer;
   font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .user-dropdown a:hover,
@@ -159,105 +202,26 @@
   color: var(--text-strong);
 }
 
-.user-menu-mobile {
+/* Links de navegação (Loja/Sobre/FAQ/Favoritos) dentro do menu do avatar:
+   só aparecem no celular, já que no desktop ficam na barra principal. */
+.dropdown-nav-links {
   display: none;
 }
 
-.navbar-toggle {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  width: 34px;
-  height: 34px;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.navbar-toggle span {
-  display: block;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--text-strong);
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.navbar-toggle.open span:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
-}
-
-.navbar-toggle.open span:nth-child(2) {
-  opacity: 0;
-}
-
-.navbar-toggle.open span:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
+.dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 4px;
 }
 
 @media (max-width: 640px) {
-  .navbar-toggle {
-    display: flex;
-  }
-
   .navbar-links {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 24px 18px;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
-  }
-
-  .navbar-links.open {
-    max-height: 400px;
-    opacity: 1;
-    padding: 14px 24px 20px;
-  }
-
-  .navbar-links a {
-    padding: 8px 0;
-    width: 100%;
-  }
-
-  .user-menu {
     display: none;
   }
 
-  .user-menu-mobile {
+  .dropdown-nav-links {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    border-top: 1px solid var(--border);
-    margin-top: 6px;
-    padding-top: 10px;
-  }
-
-  .user-menu-mobile a,
-  .user-menu-mobile button {
-    padding: 8px 0;
-    width: 100%;
-    text-align: left;
-    color: var(--text-muted);
-    text-decoration: none;
-    background: none;
-    border: none;
-    font-size: 0.92rem;
-    font-family: inherit;
-    cursor: pointer;
-  }
-
-  .user-menu-mobile a:hover,
-  .user-menu-mobile button:hover {
-    color: var(--text-strong);
   }
 }
 
@@ -267,5 +231,13 @@
   }
   .navbar-brand {
     font-size: 1.25rem;
+  }
+  .navbar-actions {
+    gap: 6px;
+  }
+  .navbar-cart-btn,
+  .user-avatar-btn {
+    width: 34px;
+    height: 34px;
   }
 }

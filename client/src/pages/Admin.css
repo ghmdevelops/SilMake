@@ -17,9 +17,20 @@
 
 .admin-tabs {
   display: flex;
+  align-items: center;
   gap: 8px;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.admin-open-tab-btn {
+  margin-left: auto;
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 7px 14px;
+  margin-bottom: 8px;
+  white-space: nowrap;
 }
 
 .admin-tab {
@@ -79,7 +90,7 @@
 
 .admin-form-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 16px;
 }
 
@@ -138,7 +149,7 @@
 .dropzone:hover,
 .dropzone.active {
   border-color: var(--accent-2);
-  background: rgba(255, 154, 86, 0.06);
+  background: rgba(201, 163, 224, 0.06);
 }
 
 .dropzone-icon {
@@ -248,6 +259,38 @@
   font-size: 0.85rem;
 }
 
+.admin-list-promo-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-gradient);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.admin-list-stock-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.admin-list-stock-badge.out {
+  background: rgba(229, 72, 77, 0.12);
+  color: var(--danger);
+}
+
+.admin-list-stock {
+  color: var(--text-dim) !important;
+  font-size: 0.75rem !important;
+}
+
 .admin-list-category {
   color: var(--accent-2) !important;
   font-size: 0.75rem !important;
@@ -260,8 +303,14 @@
 }
 
 @media (max-width: 640px) {
+  .admin {
+    padding: 28px 16px 60px;
+  }
   .admin-form-grid {
     grid-template-columns: 1fr;
+  }
+  .admin-open-tab-btn {
+    margin-left: 0;
   }
   .admin-list-item {
     grid-template-columns: 50px 1fr;
@@ -269,8 +318,17 @@
       "img info"
       "actions actions";
   }
+  .admin-list-image {
+    grid-area: img;
+  }
+  .admin-list-info {
+    grid-area: info;
+  }
   .admin-list-actions {
     grid-area: actions;
     margin-top: 8px;
+  }
+  .image-mode-toggle {
+    flex-direction: column;
   }
 }

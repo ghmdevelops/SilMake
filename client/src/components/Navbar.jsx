@@ -9,7 +9,6 @@ export default function Navbar() {
   const { totalItems } = useCart();
   const { totalItems: totalFavorites } = useWishlist();
   const { currentUser, isAdmin, logout } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -24,97 +23,103 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar-inner">
-        <Link to="/" className="navbar-brand" onClick={() => setMenuOpen(false)}>
+        <Link to="/" className="navbar-brand">
           Sil<span>Beauty</span>
         </Link>
 
-        <nav className={`navbar-links ${menuOpen ? "open" : ""}`}>
-          <NavLink to="/" end onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+        {/* Só aparece em telas maiores; no celular esses links ficam dentro do menu do avatar */}
+        <nav className="navbar-links">
+          <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
             Loja
           </NavLink>
-          <NavLink to="/sobre" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+          <NavLink to="/sobre" className={({ isActive }) => (isActive ? "active" : "")}>
             Sobre
           </NavLink>
-          <NavLink to="/faq" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+          <NavLink to="/faq" className={({ isActive }) => (isActive ? "active" : "")}>
             FAQ
           </NavLink>
           <NavLink
             to="/favoritos"
-            onClick={() => setMenuOpen(false)}
             className={({ isActive }) => "cart-link " + (isActive ? "active" : "")}
           >
             ♡ Favoritos
             {totalFavorites > 0 && <span className="cart-badge">{totalFavorites}</span>}
           </NavLink>
-          <NavLink
-            to="/carrinho"
-            onClick={() => setMenuOpen(false)}
-            className={({ isActive }) => "cart-link " + (isActive ? "active" : "")}
-          >
-            🛒 Carrinho
-            {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
-          </NavLink>
-
-          {!currentUser && (
-            <NavLink to="/login" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
-              Entrar
-            </NavLink>
-          )}
-
-          {currentUser && (
-            <div className="user-menu-mobile">
-              <Link to="/perfil" onClick={() => setMenuOpen(false)}>
-                Meu perfil
-              </Link>
-              {isAdmin && (
-                <Link to="/admin" onClick={() => setMenuOpen(false)}>
-                  Painel Admin
-                </Link>
-              )}
-              <button onClick={handleLogout}>Sair</button>
-            </div>
-          )}
         </nav>
 
-        {currentUser && (
+        {/* Sempre visíveis, mesmo no celular */}
+        <div className="navbar-actions">
+          <Link to="/carrinho" className="navbar-cart-btn" aria-label="Carrinho">
+            🛒
+            {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
+          </Link>
+
           <div className="user-menu">
             <button
               className="user-avatar-btn"
               onClick={() => setUserMenuOpen((v) => !v)}
-              aria-label="Menu do usuário"
+              aria-label="Menu da conta"
             >
-              {currentUser.photoURL ? (
-                <img src={currentUser.photoURL} alt="" />
+              {currentUser ? (
+                currentUser.photoURL ? (
+                  <img src={currentUser.photoURL} alt="" />
+                ) : (
+                  <span>{(currentUser.displayName || currentUser.email || "?").charAt(0).toUpperCase()}</span>
+                )
               ) : (
-                <span>{(currentUser.displayName || currentUser.email || "?").charAt(0).toUpperCase()}</span>
+                <span className="user-avatar-guest">👤</span>
               )}
             </button>
 
             {userMenuOpen && (
               <div className="user-dropdown">
-                <Link to="/perfil" onClick={() => setUserMenuOpen(false)}>
-                  Meu perfil
-                </Link>
-                {isAdmin && (
-                  <Link to="/admin" onClick={() => setUserMenuOpen(false)}>
-                    Painel Admin
-                  </Link>
+                {/* Só aparecem no celular (no desktop já estão na barra) */}
+                <div className="dropdown-nav-links">
+                  <NavLink to="/" end onClick={() => setUserMenuOpen(false)}>
+                    🏠 Loja
+                  </NavLink>
+                  <NavLink to="/sobre" onClick={() => setUserMenuOpen(false)}>
+                    ℹ️ Sobre
+                  </NavLink>
+                  <NavLink to="/faq" onClick={() => setUserMenuOpen(false)}>
+                    ❓ FAQ
+                  </NavLink>
+                  <NavLink to="/favoritos" onClick={() => setUserMenuOpen(false)}>
+                    ♡ Favoritos
+                    {totalFavorites > 0 && <span className="cart-badge">{totalFavorites}</span>}
+                  </NavLink>
+                  <div className="dropdown-divider" />
+                </div>
+
+                {currentUser ? (
+                  <>
+                    <Link to="/perfil" onClick={() => setUserMenuOpen(false)}>
+                      👤 Meu perfil
+                    </Link>
+                    <Link to="/meus-pedidos" onClick={() => setUserMenuOpen(false)}>
+                      📦 Meus pedidos
+                    </Link>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setUserMenuOpen(false)}>
+                        🛠️ Painel Admin
+                      </Link>
+                    )}
+                    <button onClick={handleLogout}>🚪 Sair</button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" onClick={() => setUserMenuOpen(false)}>
+                      🔑 Entrar
+                    </Link>
+                    <Link to="/cadastro" onClick={() => setUserMenuOpen(false)}>
+                      ✨ Criar conta
+                    </Link>
+                  </>
                 )}
-                <button onClick={handleLogout}>Sair</button>
               </div>
             )}
           </div>
-        )}
-
-        <button
-          className={`navbar-toggle ${menuOpen ? "open" : ""}`}
-          aria-label="Abrir menu"
-          onClick={() => setMenuOpen((v) => !v)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
+        </div>
       </div>
     </header>
   );

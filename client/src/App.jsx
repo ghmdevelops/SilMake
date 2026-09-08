@@ -8,7 +8,6 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AdminGate from "./components/AdminGate";
 import CookieConsent from "./components/CookieConsent";
-import WhatsappButton from "./components/WhatsappButton";
 import InstallPwaPrompt from "./components/InstallPwaPrompt";
 import PageLoader from "./components/PageLoader";
 import Home from "./pages/Home";
@@ -18,6 +17,8 @@ import Home from "./pages/Home";
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminOrderDetail = lazy(() => import("./pages/AdminOrderDetail"));
+const AdminOrdersPage = lazy(() => import("./pages/AdminOrdersPage"));
 const Faq = lazy(() => import("./pages/Faq"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const About = lazy(() => import("./pages/About"));
@@ -27,6 +28,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Profile = lazy(() => import("./pages/Profile"));
+const MyOrders = lazy(() => import("./pages/MyOrders"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 export default function App() {
@@ -65,11 +67,28 @@ export default function App() {
                     <Route path="/cadastro" element={<Signup />} />
                     <Route path="/esqueci-senha" element={<ForgotPassword />} />
                     <Route path="/perfil" element={<Profile />} />
+                    <Route path="/meus-pedidos" element={<MyOrders />} />
                     <Route
                       path="/admin"
                       element={
                         <AdminGate>
                           <Admin />
+                        </AdminGate>
+                      }
+                    />
+                    <Route
+                      path="/admin/pedidos"
+                      element={
+                        <AdminGate>
+                          <AdminOrdersPage />
+                        </AdminGate>
+                      }
+                    />
+                    <Route
+                      path="/admin/pedido/:uid/:orderId"
+                      element={
+                        <AdminGate>
+                          <AdminOrderDetail />
                         </AdminGate>
                       }
                     />
@@ -79,7 +98,6 @@ export default function App() {
               </main>
               <Footer />
               <CookieConsent />
-              <WhatsappButton />
               <InstallPwaPrompt />
             </div>
           </WishlistProvider>
