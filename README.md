@@ -41,7 +41,7 @@ O link "Admin" **não aparece** no menu do site — só quem souber a URL `/admi
 
 2. **No Netlify**, ao publicar o site, vá em *Site settings → Environment variables* e adicione a mesma variável:
    - Key: `VITE_ADMIN_PASSWORD`
-   - Value: sua senha escolhidas
+   - Value: sua senha escolhidos
 
    Sem essa variável configurada, a página `/admin` mostra um aviso dizendo que o acesso não foi configurado, ao invés de abrir o painel.
 
