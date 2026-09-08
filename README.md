@@ -41,7 +41,7 @@ O link "Admin" **não aparece** no menu do site — só quem souber a URL `/admi
 
 2. **No Netlify**, ao publicar o site, vá em *Site settings → Environment variables* e adicione a mesma variável:
    - Key: `VITE_ADMIN_PASSWORD`
-   - Value: sua senha escolhida
+   - Value: sua senha escolhidas
 
    Sem essa variável configurada, a página `/admin` mostra um aviso dizendo que o acesso não foi configurado, ao invés de abrir o painel.
 
@@ -54,7 +54,7 @@ O site agora tem login de verdade:
 - **Checkout**: ao clicar em "Finalizar compra", o cliente precisa estar logado e ter um endereço salvo no perfil — só então é redirecionado ao WhatsApp (já com a lista de produtos, total e endereço preenchidos).
 - **Histórico de pedidos**: cada pedido finalizado fica salvo no perfil do cliente (`/perfil`), marcado como "Fechado".
 - **Admin**: o acesso ao `/admin` agora depende de login com uma conta cujo e-mail esteja na lista `ADMIN_EMAILS` em `client/src/config.js` (hoje configurado com `gehaime43@gmail.com`).
-- **Manter conectado**: na tela de login, o cliente pode marcar "Manter conectado" (sessão permanece mesmo fechando o navegador) ou deixar desmarcado (sai automaticamente ao fechar a aba). a
+- **Manter conectado**: na tela de login, o cliente pode marcar "Manter conectado" (sessão permanece mesmo fechando o navegador) ou deixar desmarcado (sai automaticamente ao fechar a aba).
 
 ### ⚠️ Passo obrigatório no Firebase Console
 
