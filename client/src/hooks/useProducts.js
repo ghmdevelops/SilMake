@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { ref, onValue } from "firebase/database";
 
-// Escuta em tempo real a lista de produtos no Realtime Database
-export function useProducts() {
+// Escuta em tempo real a lista de produtos no Realtime Database.
+// Produtos marcados como "oculto na loja" no admin são removidos por padrão,
+// para que nenhuma tela da loja precise lembrar de filtrá-los. O painel
+// administrativo passa { includeHidden: true } para vê-los.
+export function useProducts({ includeHidden = false } = {}) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,10 +16,9 @@ export function useProducts() {
       productsRef,
       (snapshot) => {
         const data = snapshot.val() || {};
-        const list = Object.entries(data).map(([id, value]) => ({
-          id,
-          ...value,
-        }));
+        const list = Object.entries(data)
+          .map(([id, value]) => ({ id, ...value }))
+          .filter((product) => includeHidden || !product.hidden);
         list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         setProducts(list);
         setLoading(false);
@@ -28,7 +30,7 @@ export function useProducts() {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [includeHidden]);
 
   return { products, loading };
 }

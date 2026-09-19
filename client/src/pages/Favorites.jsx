@@ -15,13 +15,9 @@ export default function Favorites() {
 
   return (
     <div className="home favorites-page">
-      <section className="hero favorites-hero">
-        <h1 className="hero-title" style={{ fontSize: "2.2rem" }}>
-          Seus favoritos
-        </h1>
-        <p className="hero-subtitle" style={{ opacity: 1, animation: "none" }}>
-          Os produtos que você salvou para ver depois.
-        </p>
+      <section className="favorites-hero">
+        <h1>Seus favoritos</h1>
+        <p>Os produtos que você salvou para ver depois.</p>
       </section>
 
       {items.length === 0 ? (

@@ -18,6 +18,9 @@ dev-dist
 .env.*
 !.env.example
 
+# Tokens do Melhor Envio gravados em desenvolvimento local
+.netlify
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

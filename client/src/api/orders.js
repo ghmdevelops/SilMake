@@ -28,6 +28,27 @@ export async function createOrder(uid, order) {
   return orderNumber;
 }
 
+// Vendas fechadas fora do site (WhatsApp, Instagram, presencial) lançadas
+// pelo admin. Ficam sob "orders/manual" por não pertencerem a nenhuma conta
+// de cliente — aparecem no painel e nas métricas como qualquer outro pedido.
+export const MANUAL_ORDERS_UID = "manual";
+
+export async function createManualOrder(order) {
+  const ordersRef = ref(db, `orders/${MANUAL_ORDERS_UID}`);
+  const newRef = push(ordersRef);
+  const orderNumber = generateOrderNumber();
+
+  await set(newRef, {
+    ...order,
+    orderNumber,
+    manual: true,
+    status: order.status || "paid",
+    createdAt: order.createdAt || Date.now(),
+  });
+
+  return orderNumber;
+}
+
 // Usado pelo admin para mudar a etapa do pedido:
 // "pending" | "paid" | "shipped" | "completed" | "closed".
 // Assim que salvo, atualiza automaticamente (em tempo real) a tela do cliente.
@@ -36,9 +57,10 @@ export function updateOrderPipelineStatus(uid, orderId, status) {
   return update(orderRef, { status });
 }
 
-// Usado pelo admin para adicionar/atualizar o código de rastreio de um pedido.
-// Assim que salvo, aparece automaticamente no histórico de pedidos do cliente.
-export function updateOrderTracking(uid, orderId, trackingCode) {
+// Usado pelo admin para adicionar/atualizar o código e o link de rastreio de
+// um pedido. Assim que salvo, aparece automaticamente no histórico de pedidos
+// do cliente (o link é opcional).
+export function updateOrderTracking(uid, orderId, trackingCode, trackingUrl = "") {
   const orderRef = ref(db, `orders/${uid}/${orderId}`);
-  return update(orderRef, { trackingCode });
+  return update(orderRef, { trackingCode, trackingUrl });
 }

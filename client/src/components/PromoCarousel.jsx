@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
+import { getDiscount } from "../utils/pricing";
+import { prefersReducedMotion } from "../utils/motion";
 import "./PromoCarousel.css";
 
 const AUTOPLAY_MS = 4500;
@@ -13,23 +15,33 @@ function formatPrice(value) {
   });
 }
 
-export default function PromoCarousel({ products, demo = false }) {
+export default function PromoCarousel({ products, title = "🔥 Promoção da semana" }) {
   const { addToCart } = useCart();
   const { showToast } = useToast();
   const [index, setIndex] = useState(0);
+  // Pausa enquanto o cliente está lendo o slide (mouse em cima) ou navegando
+  // por teclado dentro dele. Conteúdo que se move sozinho e não pode ser
+  // parado é uma barreira de acessibilidade — e irrita qualquer pessoa que
+  // tente clicar no produto enquanto ele troca.
+  const [paused, setPaused] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
-    if (products.length <= 1) return undefined;
+    if (products.length <= 1 || paused || prefersReducedMotion()) return undefined;
 
     timerRef.current = setInterval(() => {
       setIndex((prev) => (prev + 1) % products.length);
     }, AUTOPLAY_MS);
 
     return () => clearInterval(timerRef.current);
-  }, [products.length]);
+  }, [products.length, paused]);
 
   if (!products || products.length === 0) return null;
+
+  // A lista pode encurtar em tempo real (ex: você marca uma promoção e o
+  // carrossel troca de conteúdo). Sem isso, o índice antigo apontaria para
+  // um slide inexistente e o carrossel apareceria em branco.
+  const safeIndex = Math.min(index, products.length - 1);
 
   function goTo(i) {
     clearInterval(timerRef.current);
@@ -37,33 +49,30 @@ export default function PromoCarousel({ products, demo = false }) {
   }
 
   function handleAdd(product) {
-    if (demo) {
-      showToast("Este é só um produto de exemplo, cadastre produtos reais no admin.", {
-        type: "info",
-      });
-      return;
-    }
     addToCart(product, 1);
     showToast(`${product.name} adicionado ao carrinho`, { type: "success" });
   }
 
   return (
-    <section className="promo-carousel">
+    <section
+      className="promo-carousel"
+      aria-roledescription="carrossel"
+      aria-label={title}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      // Capture porque o foco cai nos filhos (links e botões), não na seção.
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
       <div className="promo-carousel-viewport">
         <div className="promo-carousel-heading">
-          <span className="promo-badge">🔥 Promoção da semana</span>
-          {demo && (
-            <span className="promo-demo-note">
-              Pré-visualização com imagens de exemplo — marque um produto real como promoção no
-              admin para substituir.
-            </span>
-          )}
+          <span className="promo-badge">{title}</span>
         </div>
 
         <div className="promo-carousel-body">
         <button
           className="promo-nav promo-nav-prev"
-          onClick={() => goTo(index - 1)}
+          onClick={() => goTo(safeIndex - 1)}
           aria-label="Produto anterior"
         >
           ‹
@@ -71,33 +80,38 @@ export default function PromoCarousel({ products, demo = false }) {
 
         <div
           className="promo-carousel-track"
-          style={{ transform: `translateX(-${index * 100}%)` }}
+          style={{ transform: `translateX(-${safeIndex * 100}%)` }}
         >
           {products.map((product) => {
-            const ImageTag = demo ? "div" : Link;
-            const NameTag = demo ? "span" : Link;
-            const imageProps = demo ? {} : { to: `/produto/${product.id}` };
-            const nameProps = demo ? {} : { to: `/produto/${product.id}` };
+            const discount = getDiscount(product);
 
             return (
               <div className="promo-slide" key={product.id}>
-                <ImageTag {...imageProps} className="promo-slide-image">
+                <Link to={`/produto/${product.id}`} className="promo-slide-image">
                   {product.image ? (
                     <img src={product.image} alt={product.name} />
                   ) : (
                     <div className="promo-slide-placeholder">Sem imagem</div>
                   )}
-                </ImageTag>
+                  {discount && (
+                    <span className="promo-slide-discount">-{discount.percent}%</span>
+                  )}
+                </Link>
 
                 <div className="promo-slide-info">
                   {product.category && <span className="promo-slide-category">{product.category}</span>}
-                  <NameTag {...nameProps} className="promo-slide-name">
+                  <Link to={`/produto/${product.id}`} className="promo-slide-name">
                     {product.name}
-                  </NameTag>
+                  </Link>
                   {product.description && (
                     <p className="promo-slide-description">{product.description}</p>
                   )}
-                  <p className="promo-slide-price">{formatPrice(product.price)}</p>
+                  <p className="promo-slide-price">
+                    {discount && (
+                      <s className="promo-slide-old-price">{formatPrice(discount.oldPrice)}</s>
+                    )}
+                    {formatPrice(product.price)}
+                  </p>
                   <button className="btn btn-primary" onClick={() => handleAdd(product)}>
                     Adicionar ao carrinho
                   </button>
@@ -109,7 +123,7 @@ export default function PromoCarousel({ products, demo = false }) {
 
         <button
           className="promo-nav promo-nav-next"
-          onClick={() => goTo(index + 1)}
+          onClick={() => goTo(safeIndex + 1)}
           aria-label="Próximo produto"
         >
           ›
@@ -122,7 +136,7 @@ export default function PromoCarousel({ products, demo = false }) {
           {products.map((product, i) => (
             <button
               key={product.id}
-              className={`promo-dot ${i === index ? "active" : ""}`}
+              className={`promo-dot ${i === safeIndex ? "active" : ""}`}
               onClick={() => goTo(i)}
               aria-label={`Ir para o produto ${i + 1}`}
             />

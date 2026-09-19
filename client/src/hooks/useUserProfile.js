@@ -2,26 +2,36 @@ import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { ref, onValue } from "firebase/database";
 
-// Escuta em tempo real os dados extras do perfil do usuário (ex: sobrenome).
+// Escuta em tempo real os dados extras do perfil do usuário (sobrenome,
+// endereço, avatar) que o Firebase Authentication não guarda.
+//
+// Assim como nos hooks de pedidos, o estado registra de qual `uid` é o dado,
+// e "carregando" passa a ser derivado disso.
 export function useUserProfile(uid) {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState({ uid: null, profile: null });
 
   useEffect(() => {
-    if (!uid) {
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
+    if (!uid) return undefined;
 
     const profileRef = ref(db, `users/${uid}`);
-    const unsubscribe = onValue(profileRef, (snapshot) => {
-      setProfile(snapshot.val() || {});
-      setLoading(false);
-    });
+    const unsubscribe = onValue(
+      profileRef,
+      (snapshot) => {
+        setState({ uid, profile: snapshot.val() || {} });
+      },
+      (error) => {
+        console.error("Erro ao carregar perfil:", error);
+        setState({ uid, profile: {} });
+      }
+    );
 
     return () => unsubscribe();
   }, [uid]);
 
-  return { profile, loading };
+  const ready = state.uid === uid;
+
+  return {
+    profile: ready ? state.profile : null,
+    loading: !!uid && !ready,
+  };
 }

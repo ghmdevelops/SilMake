@@ -125,12 +125,153 @@
   border-top: 1px solid var(--border);
 }
 
-.cart-total {
+.cart-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 240px;
+}
+
+/* Cotação de frete */
+.cart-quote {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 14px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cart-quote label {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.cart-quote-row {
+  display: flex;
+  gap: 8px;
+}
+
+.cart-quote-row .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-quote-row .btn {
+  padding: 9px 16px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.cart-shipping-pending {
+  color: var(--text-dim);
+  font-style: italic;
+  font-size: 0.82rem;
+}
+
+.cart-quote-error {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.cart-quote-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.cart-quote-option {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.cart-quote-option:hover {
+  border-color: var(--accent-1);
+}
+
+.cart-quote-option.selected {
+  border-color: var(--accent-1);
+  background: rgba(236, 111, 155, 0.06);
+}
+
+.cart-quote-option input {
+  accent-color: var(--accent-1);
+  flex-shrink: 0;
+}
+
+.cart-quote-option-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-quote-option-info strong {
+  color: var(--text-strong);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.cart-quote-option-info small {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+}
+
+.cart-quote-option-price {
+  color: var(--accent-1);
+  font-weight: 700;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.cart-total-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.cart-free-shipping {
+  color: var(--success, #2e9e6b);
+  font-weight: 600;
+}
+
+/* Incentivo para o cliente aumentar o pedido e ganhar frete grátis */
+.cart-shipping-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--accent-1);
+  background: rgba(236, 111, 155, 0.1);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.cart-shipping-note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.cart-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   color: var(--text-strong);
   font-size: 1.2rem;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
 }
 
 .cart-total strong {

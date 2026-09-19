@@ -1,0 +1,131 @@
+.admin-customers-hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0 0 16px;
+}
+
+.admin-customers-toolbar {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.admin-customers-toolbar label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.customers-table {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.customers-row {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr 1.2fr 1.2fr;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.customers-row:last-child {
+  border-bottom: none;
+}
+
+.customers-head {
+  background: var(--surface-2, rgba(0, 0, 0, 0.03));
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.customer-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.customer-identity strong {
+  color: var(--text-strong);
+  font-size: 0.92rem;
+}
+
+.customer-manual-badge {
+  background: var(--border-strong);
+  color: var(--text-muted);
+  font-size: 0.62rem !important;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-left: 8px;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.customer-identity span {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.customer-identity small {
+  color: var(--text-dim);
+  font-size: 0.74rem;
+}
+
+.customer-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.customer-cell strong {
+  color: var(--text-strong);
+  font-size: 0.92rem;
+}
+
+.customer-cell small {
+  color: var(--text-dim);
+  font-size: 0.74rem;
+}
+
+.customer-spent {
+  color: var(--accent-1) !important;
+}
+
+.customer-link {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  text-decoration: none;
+}
+
+.customer-link:hover {
+  color: var(--accent-1);
+}
+
+@media (max-width: 720px) {
+  .customers-head {
+    display: none;
+  }
+
+  .customers-row {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 14px;
+  }
+
+  .customer-identity {
+    grid-column: 1 / -1;
+  }
+}

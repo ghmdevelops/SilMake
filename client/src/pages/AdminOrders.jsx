@@ -4,6 +4,9 @@ import { useAllOrders } from "../hooks/useAllOrders";
 import { updateOrderPipelineStatus, updateOrderTracking } from "../api/orders";
 import { useToast } from "../context/ToastContext";
 import { getOrderStatus, ORDER_STATUS_LABELS, ORDER_STATUSES, PAYMENT_DEADLINE_DAYS } from "../utils/orderStatus";
+import { exportOrdersToCsv } from "../utils/exportCsv";
+import { syncStockForStatusChange } from "../utils/stockSync";
+import { getExpectedTotal, hasTotalMismatch } from "../utils/orderTotals";
 import "./AdminOrders.css";
 
 function formatPrice(value) {
@@ -98,10 +101,20 @@ export default function AdminOrders() {
   const pinnedOrder = orders.find((o) => orderKey(o) === pinnedKey) || null;
 
   async function handleStatusChange(order, status) {
+    const previousStatus = getOrderStatus(order);
     setUpdatingId(order.id);
     try {
       await updateOrderPipelineStatus(order.uid, order.id, status);
-      showToast(`Pedido atualizado para "${ORDER_STATUS_LABELS[status]}"`, { type: "success" });
+
+      // Encerrar devolve as unidades ao estoque; reabrir retira novamente.
+      await syncStockForStatusChange(order, previousStatus, status);
+
+      showToast(
+        status === "closed"
+          ? "Pedido encerrado e estoque devolvido"
+          : `Pedido atualizado para "${ORDER_STATUS_LABELS[status]}"`,
+        { type: "success" }
+      );
       // Leva o admin junto para a aba onde o pedido foi parar.
       setTab(TAB_FOR_STATUS[status] || status);
     } catch (err) {
@@ -117,28 +130,41 @@ export default function AdminOrders() {
 
   function getTrackingValue(order) {
     const key = orderKey(order);
-    return trackingDrafts[key] ?? order.trackingCode ?? "";
+    return trackingDrafts[key]?.code ?? order.trackingCode ?? "";
   }
 
-  function handleTrackingChange(order, value) {
+  function getTrackingUrlValue(order) {
     const key = orderKey(order);
-    setTrackingDrafts((prev) => ({ ...prev, [key]: value }));
+    return trackingDrafts[key]?.url ?? order.trackingUrl ?? "";
+  }
+
+  function handleTrackingChange(order, field, value) {
+    const key = orderKey(order);
+    setTrackingDrafts((prev) => ({
+      ...prev,
+      [key]: {
+        code: prev[key]?.code ?? order.trackingCode ?? "",
+        url: prev[key]?.url ?? order.trackingUrl ?? "",
+        [field]: value,
+      },
+    }));
   }
 
   async function handleSaveTracking(order) {
     const key = orderKey(order);
-    const code = (trackingDrafts[key] ?? "").trim();
+    const code = getTrackingValue(order).trim();
+    const url = getTrackingUrlValue(order).trim();
     setSavingTrackingId(key);
     try {
-      await updateOrderTracking(order.uid, order.id, code);
+      await updateOrderTracking(order.uid, order.id, code, url);
       showToast(
-        code ? "Código de rastreio salvo! Já aparece para o cliente." : "Código de rastreio removido",
+        code || url ? "Rastreio salvo! Já aparece para o cliente." : "Rastreio removido",
         { type: "success" }
       );
     } catch (err) {
       console.error(err);
       showToast(
-        `Erro ao salvar o código de rastreio${err.code ? ` (${err.code})` : ""}. Verifique as regras do Firebase.`,
+        `Erro ao salvar o rastreio${err.code ? ` (${err.code})` : ""}. Verifique as regras do Firebase.`,
         { type: "error", duration: 6000 }
       );
     } finally {
@@ -183,12 +209,22 @@ export default function AdminOrders() {
         <div className="order-row-tracking">
           <label>
             Código de rastreio
+            <input
+              className="input"
+              value={getTrackingValue(order)}
+              onChange={(e) => handleTrackingChange(order, "code", e.target.value)}
+              placeholder="Ex: BR123456789BR"
+            />
+          </label>
+
+          <label>
+            Link de rastreio (opcional)
             <div className="order-row-tracking-input">
               <input
                 className="input"
-                value={getTrackingValue(order)}
-                onChange={(e) => handleTrackingChange(order, e.target.value)}
-                placeholder="Ex: BR123456789BR"
+                value={getTrackingUrlValue(order)}
+                onChange={(e) => handleTrackingChange(order, "url", e.target.value)}
+                placeholder="https://rastreamento.correios.com.br/..."
               />
               <button
                 className="btn btn-ghost"
@@ -200,6 +236,19 @@ export default function AdminOrders() {
             </div>
           </label>
         </div>
+
+        {order.manual && (
+          <p className="order-row-manual-note">
+            🧾 Venda lançada manualmente (fechada fora do site)
+          </p>
+        )}
+
+        {hasTotalMismatch(order) && (
+          <p className="order-row-total-alert">
+            ⚠️ Valor divergente: os itens somam {formatPrice(getExpectedTotal(order))}, mas o
+            pedido foi registrado com {formatPrice(order.total)}. Confira antes de enviar.
+          </p>
+        )}
 
         <div className="order-row-footer">
           <span className="order-row-total">
@@ -309,6 +358,15 @@ export default function AdminOrders() {
               Limpar filtros
             </button>
           )}
+
+          <button
+            className="btn btn-ghost"
+            onClick={() => exportOrdersToCsv(filtered)}
+            disabled={filtered.length === 0}
+            title="Baixa uma planilha com os pedidos que estão sendo exibidos"
+          >
+            ⬇ CSV
+          </button>
         </div>
       </div>
 

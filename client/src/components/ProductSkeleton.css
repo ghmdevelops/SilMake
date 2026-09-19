@@ -46,7 +46,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.6),
+    var(--shimmer-highlight),
     transparent
   );
   animation: shimmer 1.4s infinite;

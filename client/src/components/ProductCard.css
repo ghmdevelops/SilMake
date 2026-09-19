@@ -86,7 +86,7 @@
   height: 34px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--surface-glass);
   backdrop-filter: blur(4px);
   color: var(--text-dim);
   font-size: 1.15rem;
@@ -107,22 +107,34 @@
   color: var(--accent-1);
 }
 
+/* O "Ver detalhes" aparece ao passar o mouse. Em celular não existe mouse,
+   então ele nunca aparecia — era um elemento morto ocupando o DOM e sendo
+   lido por leitores de tela sem nunca estar visível.
+   Agora só existe onde há um ponteiro de verdade. No toque, o card inteiro
+   já é clicável (imagem e nome são links), então nada se perde. */
 .product-card-overlay {
-  position: absolute;
-  inset: auto 0 0 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 24px 14px 12px;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  display: none;
 }
 
-.product-card:hover .product-card-overlay {
-  opacity: 1;
-  transform: translateY(0);
+@media (hover: hover) and (pointer: fine) {
+  .product-card-overlay {
+    display: block;
+    position: absolute;
+    inset: auto 0 0 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 24px 14px 12px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .product-card:hover .product-card-overlay {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .product-card-placeholder {
@@ -168,6 +180,35 @@
   font-weight: 700;
   font-size: 1.15rem;
   margin: 2px 0 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.product-card-old-price {
+  color: var(--text-dim);
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+/* Selo de desconto — fica no canto oposto ao badge de estoque */
+.product-card-discount {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: var(--accent-1);
+  color: #fff;
+  z-index: 1;
+}
+
+/* Se houver badge de estoque, o desconto desce para não sobrepor */
+.product-card-badge ~ .product-card-discount {
+  top: 40px;
 }
 
 .product-card-btn {

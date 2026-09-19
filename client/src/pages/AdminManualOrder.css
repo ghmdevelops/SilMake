@@ -1,0 +1,140 @@
+.manual-order {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.manual-order-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.manual-order label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.manual-order small {
+  color: var(--text-dim);
+  font-size: 0.73rem;
+}
+
+.manual-order-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.manual-order-section {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  color: var(--text-strong);
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+
+.manual-order-add {
+  display: grid;
+  grid-template-columns: 1fr 90px auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.manual-order-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.manual-order-items li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: var(--text);
+  padding: 10px 12px;
+  background: var(--surface-2, rgba(0, 0, 0, 0.03));
+  border-radius: var(--radius-sm);
+}
+
+.manual-order-items strong {
+  color: var(--accent-1);
+}
+
+.manual-order-item-total {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+
+.manual-order-item-total button {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.manual-order-item-total button:hover {
+  color: var(--danger);
+}
+
+.manual-order-summary {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.manual-order-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.manual-order-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  color: var(--text-strong);
+  font-size: 0.95rem;
+}
+
+.manual-order-total strong {
+  color: var(--accent-1);
+  font-size: 1.35rem;
+}
+
+.manual-order > .btn {
+  align-self: flex-start;
+}
+
+@media (max-width: 620px) {
+  .manual-order-grid,
+  .manual-order-add {
+    grid-template-columns: 1fr;
+  }
+  .manual-order > .btn {
+    align-self: stretch;
+  }
+}

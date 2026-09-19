@@ -65,6 +65,92 @@
   margin: 22px 0 8px;
 }
 
+.order-detail-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.order-detail-tracking-code {
+  width: 100%;
+}
+
+/* Cabeçalho que só existe no papel */
+.print-only {
+  display: none;
+}
+
+/* Lista de separação: mantém no papel apenas o que é usado para embalar.
+   O escopo com :has evita que estas regras afetem outras páginas, já que o
+   CSS continua carregado depois de navegar. */
+@media print {
+  body:has(.order-detail-page) .navbar,
+  body:has(.order-detail-page) .trust-bar,
+  body:has(.order-detail-page) .app-footer,
+  body:has(.order-detail-page) footer:not(.drawer-footer),
+  body:has(.order-detail-page) .order-detail-topbar,
+  body:has(.order-detail-page) .order-detail-controls,
+  body:has(.order-detail-page) .status-badge {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+  }
+
+  .print-only strong {
+    font-size: 1.2rem;
+  }
+
+  .order-detail-page {
+    padding: 0;
+  }
+
+  .order-detail-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  /* Quadradinho para marcar cada item conforme separa */
+  .order-row-items li::before {
+    content: "☐ ";
+    font-size: 1.1rem;
+  }
+
+  .order-row-items li {
+    font-size: 1rem;
+    padding: 6px 0;
+    border-bottom: 1px dashed #ccc;
+  }
+
+  .order-row-address {
+    font-size: 1.05rem;
+    border: 1px solid #000;
+    padding: 10px;
+    border-radius: 4px;
+  }
+}
+
+.order-detail-shipping {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.order-detail-shipping + .order-detail-total {
+  margin-top: 8px;
+}
+
 .order-detail-total {
   display: flex;
   justify-content: space-between;

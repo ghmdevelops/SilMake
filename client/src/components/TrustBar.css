@@ -1,0 +1,36 @@
+.trust-bar {
+  background: var(--accent-1);
+  color: #fff;
+  font-size: 0.78rem;
+}
+
+.trust-bar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* No celular não cabem as três mensagens: mantemos só a do frete, que é a
+   informação que realmente pesa na decisão de compra. */
+@media (max-width: 720px) {
+  .trust-bar-inner {
+    padding: 7px 16px;
+    gap: 0;
+    font-size: 0.74rem;
+  }
+  .trust-item:not(:first-child) {
+    display: none;
+  }
+}

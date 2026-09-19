@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { openCookiePreferences } from "../utils/cookiePreferences";
 import "./Footer.css";
 
 export default function Footer() {
@@ -30,6 +31,11 @@ export default function Footer() {
             <h4>Legal</h4>
             <Link to="/politica-de-privacidade">Política de Privacidade</Link>
             <Link to="/termos-de-uso">Termos de Uso</Link>
+            {/* Consentimento precisa ser revogável: daqui o cliente reabre o
+                aviso e muda a escolha a qualquer momento. */}
+            <button type="button" className="footer-link-btn" onClick={openCookiePreferences}>
+              Preferências de cookies
+            </button>
           </div>
         </div>
 

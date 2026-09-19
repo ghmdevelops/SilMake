@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { ToastProvider } from "./context/ToastContext";
 import { WishlistProvider } from "./context/WishlistContext";
@@ -7,6 +7,10 @@ import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AdminGate from "./components/AdminGate";
+import ErrorBoundary from "./components/ErrorBoundary";
+import ScrollToTop from "./components/ScrollToTop";
+import TrustBar from "./components/TrustBar";
+import BackToTop from "./components/BackToTop";
 import CookieConsent from "./components/CookieConsent";
 import InstallPwaPrompt from "./components/InstallPwaPrompt";
 import PageLoader from "./components/PageLoader";
@@ -32,6 +36,8 @@ const MyOrders = lazy(() => import("./pages/MyOrders"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 export default function App() {
+  const { pathname } = useLocation();
+
   useEffect(() => {
     // Se o navegador restaurar a página do cache (bfcache) ao clicar em
     // "voltar" (ex: depois de sair da conta), força um recarregamento para
@@ -46,63 +52,83 @@ export default function App() {
   }, []);
 
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <div className="app-shell">
-              <Navbar />
-              <main className="app-main">
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/produto/:id" element={<ProductDetail />} />
-                    <Route path="/carrinho" element={<Cart />} />
-                    <Route path="/favoritos" element={<Favorites />} />
-                    <Route path="/sobre" element={<About />} />
-                    <Route path="/faq" element={<Faq />} />
-                    <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
-                    <Route path="/termos-de-uso" element={<Terms />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/cadastro" element={<Signup />} />
-                    <Route path="/esqueci-senha" element={<ForgotPassword />} />
-                    <Route path="/perfil" element={<Profile />} />
-                    <Route path="/meus-pedidos" element={<MyOrders />} />
-                    <Route
-                      path="/admin"
-                      element={
-                        <AdminGate>
-                          <Admin />
-                        </AdminGate>
-                      }
-                    />
-                    <Route
-                      path="/admin/pedidos"
-                      element={
-                        <AdminGate>
-                          <AdminOrdersPage />
-                        </AdminGate>
-                      }
-                    />
-                    <Route
-                      path="/admin/pedido/:uid/:orderId"
-                      element={
-                        <AdminGate>
-                          <AdminOrderDetail />
-                        </AdminGate>
-                      }
-                    />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </main>
-              <Footer />
-              <CookieConsent />
-              <InstallPwaPrompt />
-            </div>
-          </WishlistProvider>
-        </CartProvider>
-      </AuthProvider>
-    </ToastProvider>
+    // Boundary externo: última rede de segurança, pega até erros nos contextos.
+    <ErrorBoundary>
+      <ToastProvider>
+        <AuthProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <ScrollToTop />
+              <div className="app-shell">
+                <Navbar />
+                <TrustBar />
+                <main className="app-main">
+                  {/* Boundary interno: um erro numa página não derruba o site
+                      inteiro — a navegação continua visível. O resetKey faz a
+                      tela de erro sair quando o cliente troca de página. */}
+                  <ErrorBoundary resetKey={pathname}>
+                    <Suspense fallback={<PageLoader />}>
+                      <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route
+                          path="/produto/:id"
+                          element={<ProductDetail />}
+                        />
+                        <Route path="/carrinho" element={<Cart />} />
+                        <Route path="/favoritos" element={<Favorites />} />
+                        <Route path="/sobre" element={<About />} />
+                        <Route path="/faq" element={<Faq />} />
+                        <Route
+                          path="/politica-de-privacidade"
+                          element={<PrivacyPolicy />}
+                        />
+                        <Route path="/termos-de-uso" element={<Terms />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/cadastro" element={<Signup />} />
+                        <Route
+                          path="/esqueci-senha"
+                          element={<ForgotPassword />}
+                        />
+                        <Route path="/perfil" element={<Profile />} />
+                        <Route path="/meus-pedidos" element={<MyOrders />} />
+                        <Route
+                          path="/admin"
+                          element={
+                            <AdminGate>
+                              <Admin />
+                            </AdminGate>
+                          }
+                        />
+                        <Route
+                          path="/admin/pedidos"
+                          element={
+                            <AdminGate>
+                              <AdminOrdersPage />
+                            </AdminGate>
+                          }
+                        />
+                        <Route
+                          path="/admin/pedido/:uid/:orderId"
+                          element={
+                            <AdminGate>
+                              <AdminOrderDetail />
+                            </AdminGate>
+                          }
+                        />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                  </ErrorBoundary>
+                </main>
+                <Footer />
+                <BackToTop />
+                <CookieConsent />
+                <InstallPwaPrompt />
+              </div>
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }

@@ -1,6 +1,6 @@
 .footer {
   border-top: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--surface-glass);
   padding: 48px 24px 28px;
   margin-top: 72px;
 }
@@ -40,6 +40,23 @@
 }
 
 .footer-col a:hover {
+  color: var(--accent-1);
+}
+
+/* Botão que se comporta como os links do rodapé (abre o aviso de cookies) */
+.footer-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.footer-link-btn:hover {
   color: var(--accent-1);
 }
 

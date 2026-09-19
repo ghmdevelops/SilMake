@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useOrders } from "../hooks/useOrders";
 import { useSeo } from "../hooks/useSeo";
 import { getOrderStatus, ORDER_STATUS_LABELS } from "../utils/orderStatus";
+import "../components/ProductSkeleton.css";
 import "./MyOrders.css";
 
 const FILTERS = [
@@ -96,7 +97,17 @@ export default function MyOrders() {
         </div>
       )}
 
-      {ordersLoading && <p className="profile-status">Carregando pedidos...</p>}
+      {ordersLoading && (
+        <div className="orders-skeleton">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div className="order-card-skeleton" key={i}>
+              <div className="skeleton-line shimmer" style={{ width: "45%" }} />
+              <div className="skeleton-line shimmer" style={{ width: "70%" }} />
+              <div className="skeleton-line shimmer" style={{ width: "30%" }} />
+            </div>
+          ))}
+        </div>
+      )}
 
       {!ordersLoading && orders.length === 0 && (
         <div className="profile-empty">
@@ -148,10 +159,29 @@ export default function MyOrders() {
                 <p className="order-address">📍 {formatAddress(order.address)}</p>
               )}
 
-              {order.trackingCode && (
+              {(order.trackingCode || order.trackingUrl) && (
                 <div className="order-tracking">
-                  <span>📦 Código de rastreio</span>
-                  <strong>{order.trackingCode}</strong>
+                  <div className="order-tracking-info">
+                    <span>📦 Código de rastreio</span>
+                    <strong>{order.trackingCode || "—"}</strong>
+                  </div>
+                  {order.trackingUrl && (
+                    <a
+                      href={order.trackingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-ghost order-tracking-link"
+                    >
+                      Rastrear ↗
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {order.shippingFee !== undefined && (
+                <div className="order-shipping-line">
+                  <span>Frete{order.shippingService ? ` · ${order.shippingService}` : ""}</span>
+                  <span>{order.shippingFee > 0 ? formatPrice(order.shippingFee) : "Grátis"}</span>
                 </div>
               )}
 

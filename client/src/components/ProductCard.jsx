@@ -3,6 +3,8 @@ import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
 import { useWishlist } from "../context/WishlistContext";
 import { isOutOfStock, isLowStock } from "../utils/stock";
+import { getDiscount } from "../utils/pricing";
+import { trackAddToCart } from "../api/stats";
 import "./ProductCard.css";
 
 function formatPrice(value) {
@@ -19,10 +21,12 @@ export default function ProductCard({ product }) {
   const favorite = isFavorite(product.id);
   const outOfStock = isOutOfStock(product);
   const lowStock = isLowStock(product);
+  const discount = getDiscount(product);
 
   function handleAdd() {
     if (outOfStock) return;
     addToCart(product, 1);
+    trackAddToCart(product.id);
     showToast(`${product.name} adicionado ao carrinho`, { type: "success" });
   }
 
@@ -50,6 +54,9 @@ export default function ProductCard({ product }) {
         {!outOfStock && lowStock && (
           <span className="product-card-badge low">Últimas {product.stock}!</span>
         )}
+        {!outOfStock && discount && (
+          <span className="product-card-discount">-{discount.percent}%</span>
+        )}
 
         <button
           className={`favorite-btn ${favorite ? "active" : ""}`}
@@ -66,7 +73,12 @@ export default function ProductCard({ product }) {
         <Link to={`/produto/${product.id}`} className="product-card-name">
           {product.name}
         </Link>
-        <p className="product-card-price">{formatPrice(product.price)}</p>
+        <p className="product-card-price">
+          {discount && (
+            <s className="product-card-old-price">{formatPrice(discount.oldPrice)}</s>
+          )}
+          {formatPrice(product.price)}
+        </p>
 
         <button
           className="btn btn-primary product-card-btn"

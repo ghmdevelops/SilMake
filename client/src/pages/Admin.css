@@ -203,6 +203,139 @@
   color: var(--text-muted);
 }
 
+.image-optimized-note {
+  color: var(--success, #2e9e6b);
+  font-size: 0.78rem;
+  margin: 8px 0 0;
+}
+
+.admin-list-old-price {
+  color: var(--text-dim);
+  margin-right: 8px;
+}
+
+.admin-list-discount {
+  background: var(--accent-1);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-left: 8px;
+}
+
+.admin-list-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-list-header h2 {
+  margin-bottom: 0;
+}
+
+.admin-list-count {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.admin-export-btn {
+  margin-left: auto;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+}
+
+.admin-form-section {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  color: var(--text-strong);
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+
+.admin-form-section-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.admin-preset-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-preset-btn {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-preset-btn:hover {
+  border-color: var(--accent-1);
+  color: var(--accent-1);
+}
+
+.admin-preset-btn.active {
+  border-color: var(--accent-1);
+  background: rgba(236, 111, 155, 0.1);
+  color: var(--accent-1);
+  font-weight: 600;
+}
+
+.admin-shipping-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+}
+
+.admin-list-nopack-badge {
+  background: rgba(236, 111, 155, 0.12);
+  color: var(--accent-1);
+  font-size: 0.64rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+.admin-list-hidden-badge {
+  background: var(--border-strong);
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+.admin-list-filters {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 16px 0 20px;
+}
+
+.admin-list-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  flex: 1;
+  min-width: 170px;
+  max-width: 260px;
+}
+
 .admin-list {
   display: flex;
   flex-direction: column;

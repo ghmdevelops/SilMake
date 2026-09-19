@@ -5,6 +5,8 @@ import { updateOrderPipelineStatus, updateOrderTracking } from "../api/orders";
 import { useToast } from "../context/ToastContext";
 import { useSeo } from "../hooks/useSeo";
 import { getOrderStatus, ORDER_STATUS_LABELS, ORDER_STATUSES, PAYMENT_DEADLINE_DAYS } from "../utils/orderStatus";
+import { syncStockForStatusChange } from "../utils/stockSync";
+import { getExpectedTotal, hasTotalMismatch } from "../utils/orderTotals";
 import "./AdminOrders.css";
 import "./AdminOrderDetail.css";
 
@@ -44,6 +46,7 @@ export default function AdminOrderDetail() {
   });
 
   const [tracking, setTracking] = useState(null);
+  const [trackingUrl, setTrackingUrl] = useState(null);
   const [savingTracking, setSavingTracking] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
@@ -71,12 +74,13 @@ export default function AdminOrderDetail() {
 
   const status = getOrderStatus(order);
   const trackingValue = tracking ?? order.trackingCode ?? "";
+  const trackingUrlValue = trackingUrl ?? order.trackingUrl ?? "";
 
   async function handleSaveTracking() {
     setSavingTracking(true);
     try {
-      await updateOrderTracking(order.uid, order.id, trackingValue.trim());
-      showToast("Código de rastreio salvo! Já aparece para o cliente.", { type: "success" });
+      await updateOrderTracking(order.uid, order.id, trackingValue.trim(), trackingUrlValue.trim());
+      showToast("Rastreio salvo! Já aparece para o cliente.", { type: "success" });
     } catch (err) {
       console.error(err);
       showToast(`Erro ao salvar${err.code ? ` (${err.code})` : ""}.`, { type: "error", duration: 6000 });
@@ -87,10 +91,20 @@ export default function AdminOrderDetail() {
 
   async function handleStatusChange(e) {
     const newStatus = e.target.value;
+    const previousStatus = getOrderStatus(order);
     setUpdatingStatus(true);
     try {
       await updateOrderPipelineStatus(order.uid, order.id, newStatus);
-      showToast(`Pedido atualizado para "${ORDER_STATUS_LABELS[newStatus]}"`, { type: "success" });
+
+      // Encerrar devolve as unidades ao estoque; reabrir retira novamente.
+      await syncStockForStatusChange(order, previousStatus, newStatus);
+
+      showToast(
+        newStatus === "closed"
+          ? "Pedido encerrado e estoque devolvido"
+          : `Pedido atualizado para "${ORDER_STATUS_LABELS[newStatus]}"`,
+        { type: "success" }
+      );
     } catch (err) {
       console.error(err);
       showToast(`Erro ao atualizar${err.code ? ` (${err.code})` : ""}.`, { type: "error", duration: 6000 });
@@ -101,11 +115,29 @@ export default function AdminOrderDetail() {
 
   return (
     <div className="order-detail-page">
-      <Link to="/admin" className="order-detail-back">
-        ← Voltar para o painel
-      </Link>
+      <div className="order-detail-topbar">
+        <Link to="/admin" className="order-detail-back">
+          ← Voltar para o painel
+        </Link>
+        <button
+          className="btn btn-ghost"
+          onClick={() => window.print()}
+          title="Imprime uma lista de separação com itens e endereço"
+        >
+          🖨 Imprimir para separar
+        </button>
+      </div>
 
       <div className={`order-detail-card status-${status}`}>
+        {/* Aparece somente na impressão */}
+        <div className="print-only">
+          <strong>SilBeauty — Lista de separação</strong>
+          <div>
+            Pedido {order.orderNumber ? `#${order.orderNumber}` : ""} ·{" "}
+            {formatDate(order.createdAt)}
+          </div>
+        </div>
+
         <div className="order-detail-header">
           <div>
             <h1>
@@ -137,32 +169,65 @@ export default function AdminOrderDetail() {
         <h3 className="order-detail-section-title">Endereço de entrega</h3>
         <p className="order-row-address">📍 {formatAddress(order.address)}</p>
 
-        <h3 className="order-detail-section-title">Código de rastreio</h3>
-        <div className="order-row-tracking-input">
+        {/* Controles de gestão — ocultados na impressão */}
+        <div className="order-detail-controls">
+          <h3 className="order-detail-section-title">Código de rastreio</h3>
           <input
-            className="input"
+            className="input order-detail-tracking-code"
             value={trackingValue}
             onChange={(e) => setTracking(e.target.value)}
             placeholder="Ex: BR123456789BR"
           />
-          <button className="btn btn-ghost" disabled={savingTracking} onClick={handleSaveTracking}>
-            {savingTracking ? "Salvando..." : "Salvar"}
-          </button>
+
+          <h3 className="order-detail-section-title">Link de rastreio (opcional)</h3>
+          <div className="order-row-tracking-input">
+            <input
+              className="input"
+              value={trackingUrlValue}
+              onChange={(e) => setTrackingUrl(e.target.value)}
+              placeholder="https://rastreamento.correios.com.br/..."
+            />
+            <button
+              className="btn btn-ghost"
+              disabled={savingTracking}
+              onClick={handleSaveTracking}
+            >
+              {savingTracking ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
+
+          <h3 className="order-detail-section-title">Status</h3>
+          <select
+            className="input order-row-status-select"
+            value={order.status || (order.paid ? "paid" : order.closed ? "closed" : "pending")}
+            disabled={updatingStatus}
+            onChange={handleStatusChange}
+          >
+            {ORDER_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {ORDER_STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <h3 className="order-detail-section-title">Status</h3>
-        <select
-          className="input order-row-status-select"
-          value={order.status || (order.paid ? "paid" : order.closed ? "closed" : "pending")}
-          disabled={updatingStatus}
-          onChange={handleStatusChange}
-        >
-          {ORDER_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {ORDER_STATUS_LABELS[s]}
-            </option>
-          ))}
-        </select>
+        {order.shippingFee !== undefined && (
+          <div className="order-detail-shipping">
+            <span>
+              Frete
+              {order.shippingService ? ` · ${order.shippingService}` : ""}
+              {order.shippingDays ? ` (${order.shippingDays} dia(s))` : ""}
+            </span>
+            <span>{order.shippingFee > 0 ? formatPrice(order.shippingFee) : "Grátis"}</span>
+          </div>
+        )}
+
+        {hasTotalMismatch(order) && (
+          <p className="order-row-total-alert">
+            ⚠️ Valor divergente: os itens somam {formatPrice(getExpectedTotal(order))}, mas o
+            pedido foi registrado com {formatPrice(order.total)}. Confira antes de enviar.
+          </p>
+        )}
 
         <div className="order-detail-total">
           <span>Total</span>

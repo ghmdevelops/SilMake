@@ -13,6 +13,11 @@
   --accent-2: #ec6f9b;
   --accent-gradient: var(--accent-1);
   --danger: #e5484d;
+  --success: #2e9e6b;
+  /* Fundo translúcido do menu e do rodapé (efeito de vidro) */
+  --surface-glass: rgba(255, 255, 255, 0.75);
+  /* Faixa clara que percorre os skeletons */
+  --shimmer-highlight: rgba(255, 255, 255, 0.6);
   --font-heading: 'Poppins', 'Segoe UI', system-ui, sans-serif;
   --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
   --radius-sm: 8px;
@@ -74,6 +79,34 @@ img {
 *:focus-visible {
   outline: 2px solid var(--accent-1);
   outline-offset: 2px;
+}
+
+/* Quem ativou "reduzir movimento" no sistema (comum para quem tem enxaqueca,
+   vertigem ou sensibilidade vestibular) recebe a loja sem animação. Não
+   removemos nada da interface — só o movimento. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visível para buscadores e leitores de tela, invisível na tela.
+   Usado em títulos que a identidade visual já comunica de outra forma. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .app-shell {

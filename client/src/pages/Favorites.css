@@ -1,3 +1,29 @@
+/* Cabeçalho da página. Antes usava as classes ".hero"/".hero-title", que
+   deixaram de existir quando o hero antigo da home foi removido — o título
+   ficava sem estilo nenhum. */
 .favorites-hero {
-  padding: 48px 16px 32px;
+  padding: 36px 0 28px;
+  text-align: center;
+}
+
+.favorites-hero h1 {
+  font-family: var(--font-heading);
+  font-size: 2.1rem;
+  color: var(--text-strong);
+  margin: 0 0 8px;
+}
+
+.favorites-hero p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .favorites-hero {
+    padding: 24px 0 20px;
+  }
+  .favorites-hero h1 {
+    font-size: 1.6rem;
+  }
 }

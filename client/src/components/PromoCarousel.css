@@ -10,12 +10,6 @@
   flex-wrap: wrap;
 }
 
-.promo-demo-note {
-  color: var(--text-dim);
-  font-size: 0.78rem;
-  font-style: italic;
-}
-
 .promo-badge {
   display: inline-flex;
   align-items: center;
@@ -56,10 +50,23 @@
 
 .promo-slide-image {
   display: block;
+  position: relative;
   aspect-ratio: 1 / 1;
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--surface-2);
+}
+
+.promo-slide-discount {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--accent-1);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 999px;
 }
 
 .promo-slide-image img {
@@ -119,6 +126,16 @@
   font-size: 1.5rem;
   font-weight: 800;
   margin: 4px 0 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.promo-slide-old-price {
+  color: var(--text-dim);
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .promo-slide-info .btn {
@@ -133,7 +150,7 @@
   height: 36px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--surface-glass);
   box-shadow: var(--shadow-md);
   color: var(--text-strong);
   font-size: 1.3rem;

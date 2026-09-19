@@ -46,6 +46,46 @@ export function CartProvider({ children }) {
     setItems([]);
   }
 
+  // O carrinho vive no localStorage, então pode guardar por semanas o preço
+  // que o produto tinha quando foi adicionado. Esta função confronta os itens
+  // com o catálogo atual: corrige preço/nome/imagem e marca como indisponível
+  // o que não existe mais. Retorna o resumo do que mudou, para avisar o cliente.
+  function syncWithCatalog(products) {
+    const priceChanges = [];
+    const unavailable = [];
+    let changed = false;
+
+    const next = items.map((item) => {
+      const product = products.find((p) => p.id === item.id);
+
+      if (!product) {
+        unavailable.push(item.name);
+        if (!item.unavailable) changed = true;
+        return { ...item, unavailable: true };
+      }
+
+      const currentPrice = Number(product.price || 0);
+      if (Number(item.price) !== currentPrice) {
+        priceChanges.push({ name: product.name, from: Number(item.price), to: currentPrice });
+        changed = true;
+      }
+      if (item.name !== product.name || item.image !== product.image || item.unavailable) {
+        changed = true;
+      }
+
+      return {
+        ...item,
+        name: product.name,
+        image: product.image,
+        price: currentPrice,
+        unavailable: false,
+      };
+    });
+
+    if (changed) setItems(next);
+    return { priceChanges, unavailable };
+  }
+
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce(
     (sum, item) => sum + item.quantity * Number(item.price || 0),
@@ -60,6 +100,7 @@ export function CartProvider({ children }) {
         removeFromCart,
         updateQuantity,
         clearCart,
+        syncWithCatalog,
         totalItems,
         totalPrice,
       }}

@@ -1,0 +1,42 @@
+.back-to-top {
+  position: fixed;
+  /* Acima da faixa de cookies e do banner de instalação, abaixo dos painéis */
+  bottom: 24px;
+  right: 24px;
+  z-index: 500;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--accent-1);
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: back-to-top-in 0.2s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.back-to-top:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-1);
+}
+
+@keyframes back-to-top-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (max-width: 560px) {
+  .back-to-top {
+    bottom: 18px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+  }
+}
