@@ -1,0 +1,17 @@
+# Rotas do Netlify — versão à prova de configuração.
+#
+# Este arquivo é copiado para dentro de "dist" no build, então vale mesmo que
+# o netlify.toml da raiz não seja lido (o que acontece quando o repositório
+# começa na pasta "client" em vez da pasta acima).
+#
+# A ordem importa: a primeira regra que casar é a usada. Por isso as rotas de
+# API vêm antes do curinga.
+
+/api/shipping-quote        /.netlify/functions/shipping-quote        200!
+/api/melhorenvio/connect   /.netlify/functions/melhorenvio-connect   200!
+/api/melhorenvio/callback  /.netlify/functions/melhorenvio-callback  200!
+/api/melhorenvio/status    /.netlify/functions/melhorenvio-status    200!
+
+# Aplicação de página única: qualquer outra rota devolve o index.html, senão
+# recarregar /carrinho ou /meus-pedidos daria 404.
+/*                         /index.html                               200

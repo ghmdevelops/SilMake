@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Páginas de uso pessoal ou administrativo: não têm valor em busca e ainda
+# gastariam o tempo que o robô do Google reserva para o site. Bloquear aqui
+# faz ele investir esse tempo nas páginas de produto, que é o que traz visita.
+Disallow: /admin
+Disallow: /perfil
+Disallow: /meus-pedidos
+Disallow: /carrinho
+Disallow: /favoritos
+Disallow: /login
+Disallow: /cadastro
+Disallow: /esqueci-senha
+
+# Rotas das funções do servidor: não são páginas.
+Disallow: /api/
+
+Sitemap: https://silbeauty.netlify.app/sitemap.xml

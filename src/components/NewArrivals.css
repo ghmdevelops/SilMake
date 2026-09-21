@@ -1,0 +1,61 @@
+.new-arrivals {
+  margin: 0 0 40px;
+}
+
+.new-arrivals-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.new-arrivals-badge {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* O ícone acompanha o título, mas em rosa: dá o destaque que o emoji dava,
+   sem depender do desenho do sistema. */
+.new-arrivals-badge svg {
+  color: var(--accent-1);
+}
+
+.new-arrivals-heading p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.new-arrivals-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.new-arrivals-item {
+  flex: 0 0 200px;
+  scroll-snap-align: start;
+  /* Os itens da faixa já têm a mesma altura (flex estica por padrão), mas o
+     card dentro deles não preenchia esse espaço: parava onde o conteúdo
+     acabava. Virando flex, o card passa a ocupar a altura toda e a fileira
+     fica alinhada — inclusive os botões, que já se apoiam na base. */
+  display: flex;
+}
+
+.new-arrivals-item > * {
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .new-arrivals-item {
+    flex-basis: 160px;
+  }
+}

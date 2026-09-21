@@ -1,0 +1,309 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--surface-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+.navbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: relative;
+}
+
+.navbar-brand {
+  font-family: var(--font-heading);
+  /* Acompanha a largura da tela junto com os ícones */
+  font-size: clamp(1.15rem, 4.5vw, 1.5rem);
+  font-weight: 800;
+  color: var(--text-strong);
+  text-decoration: none;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  /* Pode encurtar se os ícones precisarem do espaço — eles são funcionais,
+     a marca é reconhecida mesmo abreviada. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar-brand span {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.navbar-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.92rem;
+  position: relative;
+  padding-bottom: 2px;
+  transition: color 0.2s ease;
+}
+
+.navbar-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -4px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent-gradient);
+  transition: right 0.2s ease;
+}
+
+.navbar-links a:hover,
+.navbar-links a.active {
+  color: var(--text-strong);
+}
+
+.navbar-links a.active::after {
+  right: 0;
+}
+
+.cart-badge {
+  background: var(--accent-gradient);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 999px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Ações sempre visíveis: busca, favoritos, carrinho e avatar/conta.
+   Tamanho e espaçamento acompanham a largura da tela de forma contínua
+   (clamp), em vez de dar um salto num único breakpoint — assim a fileira
+   nunca fica apertada nem estoura em telas intermediárias. */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 1.4vw, 8px);
+  flex-shrink: 0;
+}
+
+.navbar-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(32px, 9vw, 38px);
+  height: clamp(32px, 9vw, 38px);
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  font-size: clamp(0.85rem, 3.4vw, 1.05rem);
+  line-height: 1;
+  color: var(--text-strong);
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.navbar-icon-btn:hover {
+  border-color: var(--accent-1);
+  transform: translateY(-1px);
+}
+
+/* A etiqueta fica um pouco para dentro do botão: no print do celular ela
+   encostava na borda da tela e parecia cortada. */
+.navbar-icon-btn .cart-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  font-size: 0.62rem;
+  padding: 0 5px;
+  min-width: 16px;
+  line-height: 15px;
+  border: 2px solid var(--bg);
+}
+
+/* Barra de busca que abre abaixo do menu */
+.navbar-search {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 14px;
+}
+
+.navbar-search .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.navbar-search .btn {
+  padding: 10px 18px;
+  white-space: nowrap;
+}
+
+.navbar-search-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 6px;
+  flex-shrink: 0;
+}
+
+.navbar-search-close:hover {
+  color: var(--text-strong);
+}
+
+@media (max-width: 560px) {
+  .navbar-search {
+    padding: 0 16px 12px;
+  }
+  .navbar-search .btn {
+    padding: 10px 14px;
+    font-size: 0.82rem;
+  }
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-avatar-btn {
+  width: clamp(32px, 9vw, 38px);
+  height: clamp(32px, 9vw, 38px);
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent-gradient);
+  color: #fff;
+  font-weight: 700;
+  font-size: clamp(0.8rem, 3vw, 0.95rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.user-avatar-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Visitante sem conta. O filtro de cinza que existia aqui era para domar o
+   emoji 👤, que vinha colorido pelo sistema; num ícone SVG ele apagaria o
+   traço. Agora é só cor herdada. */
+.user-avatar-guest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  animation: dropdown-in 0.15s ease;
+  z-index: 60;
+}
+
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-dropdown a,
+.user-dropdown button {
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-dropdown a:hover,
+.user-dropdown button:hover {
+  background: var(--surface-2);
+  color: var(--text-strong);
+}
+
+/* Links de navegação (Loja/Sobre/FAQ/Favoritos) dentro do menu do avatar:
+   só aparecem no celular, já que no desktop ficam na barra principal. */
+.dropdown-nav-links {
+  display: none;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 4px;
+}
+
+@media (max-width: 640px) {
+  .navbar-links {
+    display: none;
+  }
+
+  .dropdown-nav-links {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 560px) {
+  .navbar-inner {
+    padding: 12px 14px;
+  }
+}
+
+/* Telas muito estreitas (ex: iPhone SE, 320px): os ícones diminuem em vez de
+   estourarem a largura. O último recurso é a marca encurtar — ela é a única
+   coisa ali que o cliente já sabe de cor. */
+@media (max-width: 380px) {
+  .navbar-inner {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+}

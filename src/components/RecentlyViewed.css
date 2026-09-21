@@ -1,0 +1,9 @@
+/* Reaproveita a faixa rolável de "Novidades" (NewArrivals.css). Aqui ficam
+   só as diferenças. */
+
+/* O ícone em cinza, não em rosa: esta seção é um apoio à navegação, não um
+   destaque comercial como "Novidades" ou "Promoção". Dar o mesmo peso visual
+   das outras duas competiria com elas. */
+.recently-viewed .new-arrivals-badge svg {
+  color: var(--text-dim);
+}

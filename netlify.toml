@@ -1,19 +1,103 @@
+# Configuração de deploy no Netlify.
+#
+# Este arquivo mora dentro de "client", junto com o projeto. Por isso NÃO tem
+# a opção "base": todos os caminhos aqui já são relativos a esta pasta.
+#
+# ATENÇÃO — para o Netlify encontrar este arquivo, o painel do site precisa
+# apontar para cá. Em Site configuration → Build & deploy → Build settings:
+#
+#     Base directory = client
+#
+# Sem isso, o Netlify procura o netlify.toml na raiz do repositório (a pasta
+# "ops"), não acha, e ignora tudo o que está escrito aqui. A alternativa é
+# publicar tendo a própria pasta "client" como raiz do repositório — aí o
+# campo pode ficar vazio.
+
 [build]
-  base = "client"
   command = "npm run build"
   publish = "dist"
 
-# Necessário para o React Router funcionar em rotas diretas (ex: /produto/xyz)
-# redirecionando qualquer caminho para o index.html do app.
+[build.environment]
+  # Fixa a versão do Node. Sem isso, o Netlify pode trocar a versão padrão
+  # sozinho um dia e o build quebrar sem nada ter mudado no código.
+  NODE_VERSION = "22"
+
+[functions]
+  # Relativo a esta pasta: client/netlify/functions
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# ---------------------------------------------------------------------------
+# Rotas das funções
+# ---------------------------------------------------------------------------
+# O site chama /api/... em vez do caminho interno das funções.
+# Estas mesmas regras estão duplicadas em public/_redirects, que é copiado
+# para dentro do "dist" no build. A duplicação é proposital: se este arquivo
+# não for lido (ver o aviso do "Base directory" no topo), o site continua
+# funcionando mesmo assim.
+[[redirects]]
+  from = "/api/shipping-quote"
+  to = "/.netlify/functions/shipping-quote"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/melhorenvio/connect"
+  to = "/.netlify/functions/melhorenvio-connect"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/melhorenvio/callback"
+  to = "/.netlify/functions/melhorenvio-callback"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/melhorenvio/status"
+  to = "/.netlify/functions/melhorenvio-status"
+  status = 200
+  force = true
+
+# Aplicação de página única: qualquer rota (ex: /carrinho, /meus-pedidos)
+# precisa devolver o index.html, senão recarregar a página dá erro 404.
+# Precisa ser a ÚLTIMA regra — a primeira que casa é a que vale.
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Evita que o navegador guarde uma cópia em cache do HTML principal,
-# reforçando que páginas protegidas (ex: /perfil) sejam sempre revalidadas
-# ao usar o botão "voltar" depois de sair da conta.
+# ---------------------------------------------------------------------------
+# Cabeçalhos
+# ---------------------------------------------------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Impede que o site seja embutido em um iframe de outra pessoa, golpe
+    # usado para fazer o cliente clicar em algo sem perceber.
+    X-Frame-Options = "SAMEORIGIN"
+    # Impede o navegador de "adivinhar" o tipo de um arquivo.
+    X-Content-Type-Options = "nosniff"
+    # Não vaza o endereço completo da página ao sair do site.
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # A loja não usa nenhum destes recursos.
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+
+# Arquivos com hash no nome (ex: index-CCwKXf27.js) nunca mudam de conteúdo:
+# quando o código muda, o nome muda junto. Podem ser guardados para sempre.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# O service worker é o oposto: precisa ser sempre reconferido, senão o
+# cliente fica preso numa versão antiga da loja.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 [[headers]]
   for = "/index.html"
   [headers.values]
-    Cache-Control = "no-store, must-revalidate"
+    Cache-Control = "public, max-age=0, must-revalidate"
