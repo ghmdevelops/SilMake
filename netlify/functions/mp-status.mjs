@@ -9,7 +9,7 @@
 import { getConfig, jsonResponse, mpFetch } from "./lib/mercadoPago.mjs";
 
 export default async function handler() {
-  const { configured, isTest, webhookSecret, dbSecret, accessToken } = getConfig();
+  const { configured, isLegacySandbox, webhookSecret, dbSecret, accessToken } = getConfig();
 
   if (!configured) {
     return jsonResponse({
@@ -22,7 +22,6 @@ export default async function handler() {
   // idêntico ao de um token inválido. Comparar o tamanho tira a dúvida.
   const base = {
     configured: true,
-    environment: isTest ? "teste" : "produção",
     tokenLength: accessToken.length,
     webhookSecretSet: Boolean(webhookSecret),
     firebaseSecretSet: Boolean(dbSecret),
@@ -42,10 +41,22 @@ export default async function handler() {
     });
   }
 
+  const nickname = String(data?.nickname || "");
+  // A credencial de um usuário de teste começa com APP_USR-, igual à de
+  // produção — só o apelido da conta revela a diferença. Sem isso, não há
+  // como saber se você está testando ou cobrando de verdade.
+  const isTestUser = nickname.toUpperCase().startsWith("TESTUSER");
+
   return jsonResponse({
     ...base,
     tokenValid: true,
-    account: data?.nickname || data?.email || "",
+    account: nickname,
+    environment: isLegacySandbox
+      ? "sandbox (credencial TEST- antiga)"
+      : isTestUser
+        ? "teste (usuário de teste)"
+        : "PRODUÇÃO — cobra de verdade",
+    isTestAccount: isTestUser,
     // Sem estes dois, o pagamento até acontece, mas o pedido nunca é
     // marcado como pago — o que é pior do que não funcionar.
     ready: Boolean(webhookSecret && dbSecret),

@@ -565,18 +565,71 @@ O que você quer ver:
 
 **`ready: false`** significa que o pagamento até acontece, mas o pedido **nunca é marcado como pago** — que é pior do que não funcionar, porque a venda entra sem você perceber.
 
-### Testando antes de valer dinheiro
+### ⚠️ Como saber se você está testando ou cobrando de verdade
 
-Use as credenciais de **teste** (o Access Token começa com `TEST-`). O código detecta pelo prefixo e usa o checkout de sandbox sozinho — não há variável separada para esquecer de trocar.
+Isso é menos óbvio do que parece. O Mercado Pago migrou para **usuários de teste**, e a credencial de um usuário de teste começa com `APP_USR-` — **exatamente igual à de produção**. Não há como saber pelo token.
 
-Crie um comprador de teste no painel do Mercado Pago e use os cartões de teste da documentação deles. Faça um pedido de ponta a ponta e confira:
+A diferença está na conta: o apelido de um usuário de teste é `TESTUSER...`. Por isso o `/api/mp-status` consulta a conta e responde:
 
-1. O checkout abriu com o valor correto, incluindo frete
-2. Depois de pagar, o pedido virou **"pago"** em `/admin` — pode levar alguns segundos
-3. O **estoque baixou** na quantidade certa
-4. Pagando de novo o mesmo pedido, o estoque **não baixa duas vezes**
+```json
+{ "environment": "teste (usuário de teste)", "isTestAccount": true }
+```
 
-O item 4 importa: o Mercado Pago reenvia o mesmo aviso várias vezes, e o código só age na transição de `pending` para `paid`.
+Se aparecer **`"environment": "PRODUÇÃO — cobra de verdade"`**, cada pagamento é dinheiro real. Confira isso antes de qualquer teste.
+
+### Testes automáticos (rodam sem internet e sem dinheiro)
+
+```bash
+npm run test:pagamento
+```
+
+O webhook é o código que decide "este pedido foi pago" — um erro ali libera produto sem pagamento, ou baixa estoque duas vezes. Como não se pode testar isso com dinheiro real, o script substitui o Mercado Pago e o Firebase por dublês e força os casos difíceis:
+
+| Cenário | O que precisa acontecer |
+|---|---|
+| Pagamento aprovado | Pedido vira "pago" e estoque baixa |
+| **Aviso repetido** | Estoque **não** baixa de novo |
+| **Assinatura forjada** | Recusa com 401, pedido intacto |
+| **Sem segredo configurado** | Recusa em vez de confiar |
+| **Pagou menos que o total** | Não marca como pago, registra alerta |
+| Aviso que não é pagamento | Ignora sem erro |
+| Estoque menor que o pedido | Para em zero e avisa da divergência |
+
+São 20 verificações. Rode depois de qualquer mexida no webhook.
+
+### Teste manual, de ponta a ponta
+
+Com as credenciais do **usuário de teste vendedor** configuradas e publicadas:
+
+**1. Compra aprovada.** Faça um pedido e pague com um cartão de teste. No nome do titular, escreva **`APRO`** e use o CPF `12345678909`. Depois confira:
+- o checkout abriu com o valor certo, incluindo frete
+- o pedido virou **"pago"** em `/admin` (pode levar alguns segundos)
+- o **estoque baixou** na quantidade certa
+- o aviso chegou no seu Telegram
+
+**2. Recusas.** Repita trocando o nome do titular. Cada palavra força um resultado:
+
+| Nome do titular | Resultado esperado |
+|---|---|
+| `APRO` | aprovado |
+| `OTHE` | recusado por erro geral |
+| `CONT` | pagamento pendente |
+| `FUND` | recusado por saldo insuficiente |
+| `SECU` | recusado por código de segurança |
+| `EXPI` | recusado por validade |
+| `FORM` | recusado por erro no formulário |
+
+Em todas as recusas, o esperado é: o pedido **continua "pendente"**, o estoque **não baixa**, e o cliente volta para `/meus-pedidos?pagamento=falhou` com o aviso na tela.
+
+**3. Pix e boleto.** Escolha Pix no checkout e **não pague**. O pedido deve ficar pendente. Isso simula o caso real de quem fecha a compra e paga horas depois.
+
+**4. Cliente fecha a aba.** Pague e feche o navegador antes de voltar ao site. O pedido **ainda deve virar "pago"** — é exatamente por isso que a confirmação vem do webhook, e não do retorno.
+
+### Onde olhar quando algo não funcionar
+
+**Netlify → sua aplicação → Logs → Functions.** Os erros do webhook aparecem ali, com a mensagem que escrevi em cada caso.
+
+**Mercado Pago → Suas integrações → Webhooks.** Mostra cada aviso enviado e a resposta que o seu servidor devolveu. Se aparecer 401, é assinatura — confira o `MP_WEBHOOK_SECRET`. Se aparecer 503, falta variável.
 
 ### Limitações conhecidas
 

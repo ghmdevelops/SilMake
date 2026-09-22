@@ -21,11 +21,27 @@ export function getConfig() {
     accessToken,
     webhookSecret: process.env.MP_WEBHOOK_SECRET || "",
     dbSecret: process.env.FIREBASE_DB_SECRET || "",
-    // Detectado pelo próprio token, em vez de uma variável separada que
-    // poderia divergir dele.
-    isTest: accessToken.startsWith("TEST-"),
+    // Credencial antiga de sandbox. O Mercado Pago migrou para "usuários de
+    // teste", cujas credenciais começam com APP_USR- igual às de produção —
+    // então NÃO é possível saber pelo token se é teste ou dinheiro real.
+    // Quem descobre isso é isTestAccount(), abaixo, consultando a conta.
+    isLegacySandbox: accessToken.startsWith("TEST-"),
     configured: Boolean(accessToken),
   };
+}
+
+// Descobre se o token pertence a um usuário de teste.
+//
+// Por que não dá para olhar só o token: a credencial de um usuário de teste
+// começa com "APP_USR-", exatamente como a de produção. A diferença está na
+// conta — o apelido de um usuário de teste é "TESTUSER...".
+//
+// Isso importa muito: sem essa checagem, você não tem como saber se está
+// testando ou cobrando de verdade.
+export async function isTestAccount() {
+  const { ok, data } = await mpFetch("/users/me");
+  if (!ok) return null; // indeterminado
+  return String(data?.nickname || "").toUpperCase().startsWith("TESTUSER");
 }
 
 export function jsonResponse(body, status = 200) {

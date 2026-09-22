@@ -9,6 +9,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "test:pagamento": "node scripts/test-mp-webhook.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "og-image": "node scripts/generate-og-image.mjs"
   },

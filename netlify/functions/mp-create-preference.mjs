@@ -112,8 +112,12 @@ export default async function handler(request) {
   }
 
   return jsonResponse({
-    // init_point é o checkout real; sandbox_init_point é o de teste.
-    checkoutUrl: getConfig().isTest ? data.sandbox_init_point : data.init_point,
+    // sandbox_init_point serve apenas para a credencial antiga "TEST-". Com
+    // usuário de teste (APP_USR-), o checkout correto é o init_point normal:
+    // o ambiente de teste é a própria conta, não uma URL diferente.
+    checkoutUrl: getConfig().isLegacySandbox
+      ? data.sandbox_init_point
+      : data.init_point,
     preferenceId: data.id,
   });
 }
