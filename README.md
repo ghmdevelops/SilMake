@@ -266,7 +266,7 @@ O que essa regra garante:
 
 ⚠️ **Limitação que permanece** (sem servidor próprio): as regras do Firebase não têm laço/soma, então o campo `total` não pode ser recalculado por elas. Com os preços, quantidades e frete já validados individualmente, a única manipulação possível é enviar um `total` que não corresponde à soma. Para cobrir isso, o painel admin **recalcula o valor esperado de todo pedido** e exibe um alerta vermelho de "Valor divergente" na lista e no detalhe do pedido — então você vê a diferença antes de confirmar o envio. Uma Cloud Function eliminaria até esse caso.
 
-### Como o estoque é baixado
+### Como o estoque é baixados
 
 A baixa acontece **quando você confirma o pagamento** no painel, e não quando o cliente finaliza a compra.
 
