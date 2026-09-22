@@ -15,6 +15,7 @@ import CookieConsent from "./components/CookieConsent";
 import InstallPwaPrompt from "./components/InstallPwaPrompt";
 import PageLoader from "./components/PageLoader";
 import SplashScreen from "./components/SplashScreen";
+import { usePaidOrderCleanup } from "./hooks/usePaidOrderCleanup";
 import Home from "./pages/Home";
 
 // Rotas secundárias carregadas sob demanda (code-splitting), para deixar
@@ -36,6 +37,13 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Profile = lazy(() => import("./pages/Profile"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Não desenha nada: existe só para rodar o hook dentro dos provedores de
+// autenticação e carrinho, que o App renderiza (e portanto não pode consumir).
+function PaidOrderCleanup() {
+  usePaidOrderCleanup();
+  return null;
+}
 
 export default function App() {
   const { pathname } = useLocation();
@@ -61,6 +69,8 @@ export default function App() {
           <CartProvider>
             <WishlistProvider>
               <ScrollToTop />
+              {/* Limpa o carrinho de quem pagou e fechou a aba sem voltar. */}
+              <PaidOrderCleanup />
               {/* Fora do app-shell: cobre a tela inteira enquanto o catálogo
                   carrega, e se remove sozinho depois. */}
               <SplashScreen />

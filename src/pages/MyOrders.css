@@ -287,3 +287,19 @@
   background: #fdeeee;
   color: #9b1c1c;
 }
+
+/* Retomar o pagamento de um pedido pendente. */
+.order-pay-btn {
+  width: 100%;
+  margin-top: 14px;
+}
+
+/* Meio e data do pagamento, confirmados pelo Mercado Pago. */
+.order-payment-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  padding-top: 8px;
+}

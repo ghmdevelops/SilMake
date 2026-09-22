@@ -483,3 +483,10 @@
     width: 100%;
   }
 }
+
+/* Confirmacao de pagamento vinda do Mercado Pago. */
+.order-row-payment {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}

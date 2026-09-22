@@ -23,17 +23,27 @@ process.env.FIREBASE_DB_SECRET = "segredo-firebase-de-teste";
 // Dublês de Mercado Pago e Firebase
 // ---------------------------------------------------------------------------
 
+process.env.TELEGRAM_BOT_TOKEN = "token-de-teste";
+process.env.TELEGRAM_CHAT_ID = "123";
+
 let banco;
 let pagamento;
 let escritas;
+let avisosTelegram;
 
 function resetarCenario({ statusDoPedido = "pending", valorPago = 100 } = {}) {
   escritas = [];
+  avisosTelegram = [];
   banco = {
     "orders/user1/order1": {
       orderNumber: "202609081234",
       status: statusDoPedido,
       total: 100,
+      subtotal: 100,
+      shippingFee: 0,
+      customerName: "Maria Teste",
+      customerEmail: "maria@exemplo.com",
+      address: { street: "Rua A", number: "10", city: "São Paulo", state: "SP", zipCode: "01000-000" },
       items: [
         { id: "prod1", name: "Batom", price: 50, quantity: 2 },
       ],
@@ -45,7 +55,9 @@ function resetarCenario({ statusDoPedido = "pending", valorPago = 100 } = {}) {
     status: "approved",
     transaction_amount: valorPago,
     external_reference: "user1|order1",
-    payment_type_id: "pix",
+    // Valor real da API para Pix. O "pix" que se esperaria aqui vai em
+    // payment_method_id, que é outro campo.
+    payment_type_id: "bank_transfer",
     date_approved: "2026-09-22T10:00:00.000Z",
   };
 }
@@ -53,6 +65,12 @@ function resetarCenario({ statusDoPedido = "pending", valorPago = 100 } = {}) {
 globalThis.fetch = async (url, options = {}) => {
   const endereco = String(url);
   const metodo = options.method || "GET";
+
+  // --- Telegram ---
+  if (endereco.includes("api.telegram.org")) {
+    avisosTelegram.push(JSON.parse(options.body).text);
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
 
   // --- Mercado Pago ---
   if (endereco.includes("api.mercadopago.com")) {
@@ -138,6 +156,18 @@ resetarCenario();
   verificar("baixa o estoque de 10 para 8", banco["products/prod1/stock"] === 8,
     `ficou ${banco["products/prod1/stock"]}`);
   verificar("informa a atualização", corpo.updated === "paid", JSON.stringify(corpo));
+  verificar("guarda o meio de pagamento",
+    banco["orders/user1/order1"].paymentMethod === "bank_transfer");
+  verificar("guarda a data do pagamento", Boolean(banco["orders/user1/order1"].paidAt));
+
+  // O aviso precisa trazer o que você usa para separar e despachar.
+  const aviso = avisosTelegram[0] || "";
+  verificar("avisa no Telegram", avisosTelegram.length === 1, `${avisosTelegram.length} avisos`);
+  verificar("aviso diz que o pagamento foi confirmado", aviso.includes("PAGAMENTO CONFIRMADO"));
+  verificar("aviso traz o número do pedido", aviso.includes("202609081234"));
+  verificar("aviso traz o meio de pagamento", aviso.includes("Pix"));
+  verificar("aviso traz o item", aviso.includes("Batom"));
+  verificar("aviso traz o endereço", aviso.includes("Rua A"));
 }
 
 console.log("\n2. Aviso repetido (o Mercado Pago reenvia) — não pode baixar estoque de novo");
@@ -148,6 +178,9 @@ resetarCenario({ statusDoPedido: "paid" });
     `ficou ${banco["products/prod1/stock"]}`);
   const mexeuNoEstoque = escritas.some((e) => e.caminho.includes("stock"));
   verificar("nem tentou escrever no estoque", !mexeuNoEstoque);
+  // Sem esta trava, cada reenvio do Mercado Pago mandaria um aviso novo.
+  verificar("não avisa de novo no Telegram", avisosTelegram.length === 0,
+    `${avisosTelegram.length} avisos`);
 }
 
 console.log("\n3. Assinatura forjada — alguém tentando marcar pedido como pago");
@@ -179,6 +212,8 @@ resetarCenario({ valorPago: 1 });
     `ficou ${banco["orders/user1/order1"].status}`);
   verificar("registra o alerta", Boolean(banco["orders/user1/order1"].paymentAlert));
   verificar("não baixa estoque", banco["products/prod1/stock"] === 10);
+  verificar("não avisa venda confirmada", avisosTelegram.length === 0,
+    `${avisosTelegram.length} avisos`);
 }
 
 console.log("\n6. Aviso que não é de pagamento — deve ser ignorado");

@@ -12,7 +12,7 @@ import { fetchShippingQuote } from "../api/shippingQuote";
 import { formatCep, onlyDigits } from "../api/cep";
 import { useSeo } from "../hooks/useSeo";
 import { createOrder } from "../api/orders";
-import { startPayment } from "../api/payment";
+import { startPayment, savePendingPurchase } from "../api/payment";
 import { hasStockControl } from "../utils/stock";
 import { sendTelegramNotification } from "../utils/telegram";
 import "./Cart.css";
@@ -59,6 +59,9 @@ export default function Cart() {
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [quoting, setQuoting] = useState(false);
+  // Trava o botão enquanto o pedido é salvo e a cobrança é criada. Sem isso,
+  // um segundo clique geraria um pedido duplicado.
+  const [placing, setPlacing] = useState(false);
   const [quoteError, setQuoteError] = useState("");
   const [quoteUnavailable, setQuoteUnavailable] = useState(false);
 
@@ -200,6 +203,8 @@ export default function Cart() {
   }
 
   async function handleCheckout() {
+    if (placing) return;
+
     // Boa prática: exige login antes de finalizar, para vincular o pedido à
     // conta do cliente e permitir o histórico de compras no perfil.
     if (!currentUser) {
@@ -268,6 +273,8 @@ export default function Cart() {
         `• ${item.name} (x${item.quantity}) — ${formatPrice(item.price * item.quantity)}`
     );
 
+    setPlacing(true);
+
     let orderNumber = "";
     let orderId = "";
     try {
@@ -307,6 +314,8 @@ export default function Cart() {
         `Não conseguimos registrar seu pedido${err.code ? ` (${err.code})` : ""}. Tente novamente em instantes — seu carrinho está salvo.`,
         { type: "error", duration: 7000 }
       );
+      // Libera o botão para ela poder tentar de novo.
+      setPlacing(false);
       return;
     }
 
@@ -315,6 +324,53 @@ export default function Cart() {
     // liberar escrita no estoque para qualquer pessoa logada — bastava criar
     // uma conta para zerar o estoque da loja inteira. Veja utils/stockSync.js.
 
+    // Dados da compra para o relatório do GA4. Montados aqui porque o
+    // carrinho vai ser limpo, mas só ENVIADOS quando a venda se concretiza.
+    const dadosDaCompra = {
+      transaction_id: orderNumber,
+      value: orderTotal,
+      shipping: shippingFee,
+      currency: "BRL",
+      items: items.map((item) => ({
+        item_id: item.id,
+        item_name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+    };
+
+    // Pagamento online: tenta levar o cliente ao checkout do Mercado Pago.
+    // O pedido JÁ está salvo neste ponto — se o pagamento não estiver
+    // configurado ou falhar, ele segue para o histórico e o acerto acontece
+    // como sempre, por fora. Nenhuma venda se perde por isso.
+    const pagamento = await startPayment({ uid: currentUser.uid, orderId });
+
+    if (pagamento.checkoutUrl) {
+      // Guardado para o evento de compra ser disparado só na volta, se o
+      // pagamento der certo. Registrar aqui contaria como venda todo pedido
+      // abandonado no checkout, inflando a sua taxa de conversão.
+      savePendingPurchase({
+        uid: currentUser.uid,
+        orderId,
+        purchase: dadosDaCompra,
+      });
+
+      // O carrinho NÃO é limpo aqui: quem desiste no checkout volta e
+      // encontra tudo no lugar. A limpeza acontece na volta com pagamento
+      // aprovado, em MyOrders.
+      showToast("Levando você para o pagamento...", { type: "info", duration: 3000 });
+      window.location.assign(pagamento.checkoutUrl);
+      return;
+    }
+
+    if (pagamento.error && pagamento.error !== "sem_funcao" && pagamento.error !== "not_configured") {
+      console.warn("Pagamento online indisponível:", pagamento.error, pagamento.message);
+    }
+
+    // Daqui para baixo: não houve pagamento online. O pedido em si é a
+    // conversão, o acerto acontece por fora e você confirma no painel — por
+    // isso o aviso do Telegram sai agora. Quando há pagamento, quem avisa é
+    // o webhook, e só depois do dinheiro entrar.
     const message = [
       `🛍️ Novo pedido${orderNumber ? ` #${orderNumber}` : ""} na SilBeauty!`,
       "",
@@ -332,13 +388,10 @@ export default function Cart() {
       `Data do pedido: ${formatDateTime(now)}`,
     ].join("\n");
 
-    // Envia o aviso direto pro seu Telegram, sem abrir nada nem redirecionar
-    // o cliente para lugar nenhum.
-    try {
-      await sendTelegramNotification(message);
-    } catch (err) {
-      console.error("Erro ao enviar notificação do pedido:", err);
-    }
+    await sendTelegramNotification(message);
+
+    trackEvent("purchase", dadosDaCompra);
+    clearCart();
 
     showToast(
       orderNumber
@@ -346,38 +399,6 @@ export default function Cart() {
         : "Pedido enviado com sucesso! Em breve entraremos em contato.",
       { type: "success", duration: 4500 }
     );
-
-    // Evento de compra no padrão do GA4, para os relatórios de e-commerce
-    // funcionarem sem configuração extra.
-    trackEvent("purchase", {
-      transaction_id: orderNumber,
-      value: orderTotal,
-      shipping: shippingFee,
-      currency: "BRL",
-      items: items.map((item) => ({
-        item_id: item.id,
-        item_name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-      })),
-    });
-
-    clearCart();
-
-    // Pagamento online: tenta levar o cliente ao checkout do Mercado Pago.
-    // O pedido JÁ está salvo neste ponto — se o pagamento não estiver
-    // configurado ou falhar, ele segue para o histórico e o acerto acontece
-    // como sempre, por fora. Nenhuma venda se perde por isso.
-    const pagamento = await startPayment({ uid: currentUser.uid, orderId });
-
-    if (pagamento.checkoutUrl) {
-      window.location.href = pagamento.checkoutUrl;
-      return;
-    }
-
-    if (pagamento.error && pagamento.error !== "sem_funcao" && pagamento.error !== "not_configured") {
-      console.warn("Pagamento online indisponível:", pagamento.error, pagamento.message);
-    }
 
     // Leva o cliente direto para o histórico, onde ele acompanha o status
     // e o rastreio do pedido que acabou de fazer.
@@ -548,8 +569,8 @@ export default function Cart() {
           </div>
         </div>
 
-        <button className="btn btn-primary" onClick={handleCheckout}>
-          Finalizar compra
+        <button className="btn btn-primary" onClick={handleCheckout} disabled={placing}>
+          {placing ? "Aguarde..." : "Finalizar compra"}
         </button>
       </div>
     </div>

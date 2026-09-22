@@ -1,5 +1,5 @@
 import { db } from "../firebase";
-import { ref, push, set, update } from "firebase/database";
+import { ref, push, set, update, get } from "firebase/database";
 
 // Gera um número de pedido com 12 dígitos numéricos (ex: "202609081234"),
 // fácil de buscar tanto pelo cliente quanto direto no banco de dados.
@@ -51,6 +51,22 @@ export async function createManualOrder(order) {
   });
 
   return orderNumber;
+}
+
+// Leitura pontual do status de um pedido. Usada para descobrir se um
+// pagamento iniciado antes já foi confirmado — uma consulta única, em vez de
+// abrir uma escuta em tempo real só para isso.
+//
+// Devolve null se o pedido não existe ou se a leitura foi recusada (as regras
+// só permitem ao dono do pedido e ao admin).
+export async function fetchOrderStatus(uid, orderId) {
+  try {
+    const snapshot = await get(ref(db, `orders/${uid}/${orderId}/status`));
+    return snapshot.exists() ? snapshot.val() : null;
+  } catch (err) {
+    console.warn("Não foi possível consultar o status do pedido:", err.message);
+    return null;
+  }
 }
 
 // Usado pelo admin para mudar a etapa do pedido:

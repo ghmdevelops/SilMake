@@ -7,6 +7,7 @@ import { getOrderStatus, ORDER_STATUS_LABELS, ORDER_STATUSES, PAYMENT_DEADLINE_D
 import { exportOrdersToCsv } from "../utils/exportCsv";
 import { syncStockForStatusChange } from "../utils/stockSync";
 import { getExpectedTotal, hasTotalMismatch } from "../utils/orderTotals";
+import { paymentMethodLabel } from "../utils/payment";
 import "./AdminOrders.css";
 
 function formatPrice(value) {
@@ -257,6 +258,31 @@ export default function AdminOrders() {
           <p className="order-row-total-alert">
             ⚠️ Valor divergente: os itens somam {formatPrice(getExpectedTotal(order))}, mas o
             pedido foi registrado com {formatPrice(order.total)}. Confira antes de enviar.
+          </p>
+        )}
+
+        {/* Confirmado pelo Mercado Pago, não por você. Saber o meio ajuda no
+            estorno e na conciliação; a data é a que vale para o prazo de
+            envio, não a da criação do pedido. */}
+        {order.paidAt && (
+          <p className="order-row-payment">
+            💳 Pago com <strong>{paymentMethodLabel(order.paymentMethod)}</strong> em{" "}
+            {formatDate(order.paidAt)}
+            {order.paymentId ? ` · id ${order.paymentId}` : ""}
+          </p>
+        )}
+
+        {order.paymentAlert && (
+          <p className="order-row-total-alert">
+            ⚠️ Pagamento com valor divergente: {order.paymentAlert}. Confira no Mercado Pago
+            antes de enviar.
+          </p>
+        )}
+
+        {order.stockAlert && (
+          <p className="order-row-total-alert">
+            ⚠️ Estoque insuficiente na confirmação: {order.stockAlert}. Confira o que você
+            tem antes de prometer o envio.
           </p>
         )}
 

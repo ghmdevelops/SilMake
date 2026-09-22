@@ -22,6 +22,12 @@ import {
   patchOrder,
   decrementStock,
 } from "./lib/mercadoPago.mjs";
+import {
+  sendTelegram,
+  nomeDoMeio,
+  formatarPreco,
+  formatarDataHora,
+} from "./lib/telegram.mjs";
 
 // Confere a assinatura conforme a documentação do Mercado Pago. O cabeçalho
 // vem como "ts=1704908010,v1=618c85345248dd820d5fd456117c2ab2ef8eda45a0282ff693eac24131a5e839".
@@ -51,6 +57,56 @@ function signatureIsValid(request, dataId) {
   if (a.length !== b.length) return false;
   // Comparação de tempo constante: evita descobrir a assinatura por tentativa.
   return timingSafeEqual(a, b);
+}
+
+function formatarEndereco(address) {
+  if (!address || !address.street) return "";
+  const { street, number, complement, neighborhood, city, state, zipCode } = address;
+  return [
+    [street, number].filter(Boolean).join(", "),
+    complement,
+    [neighborhood, city, state].filter(Boolean).join(" - "),
+    zipCode,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+// Mensagem do Telegram. Chega só quando o pagamento entrou, então ela traz
+// tudo o que você precisa para separar e despachar sem abrir o painel.
+function montarAviso(order, payment, problemasDeEstoque) {
+  const itens = (order.items || []).map(
+    (i) => `• ${i.name} (x${i.quantity}) — ${formatarPreco(i.price * i.quantity)}`
+  );
+
+  const linhas = [
+    `💰 PAGAMENTO CONFIRMADO — pedido #${order.orderNumber || ""}`,
+    "",
+    ...itens,
+    "",
+    `Subtotal: ${formatarPreco(order.subtotal)}`,
+    `Frete: ${order.shippingFee > 0 ? formatarPreco(order.shippingFee) : "Grátis"}`,
+    `Total pago: ${formatarPreco(payment.transaction_amount)}`,
+    "",
+    `Meio: ${nomeDoMeio(payment.payment_type_id)}`,
+    `Pago em: ${formatarDataHora(payment.date_approved) || "agora"}`,
+  ];
+
+  if (order.shippingService) linhas.push(`Envio: ${order.shippingService}`);
+
+  const endereco = formatarEndereco(order.address);
+  if (endereco) linhas.push("", "Endereço de entrega:", endereco);
+
+  linhas.push("", `Cliente: ${order.customerName || order.customerEmail || "—"}`);
+  if (order.customerEmail) linhas.push(`E-mail: ${order.customerEmail}`);
+
+  // Divergência de estoque precisa aparecer aqui: é o momento em que você
+  // ainda pode avisar a cliente antes de prometer o envio.
+  if (problemasDeEstoque.length > 0) {
+    linhas.push("", `⚠️ Conferir estoque: ${problemasDeEstoque.join(", ")}`);
+  }
+
+  return linhas.join("\n");
 }
 
 export default async function handler(request) {
@@ -147,6 +203,12 @@ export default async function handler(request) {
       ...(problemas.length > 0 ? { stockAlert: problemas.join(", ") } : {}),
     });
     console.log(`Pedido ${order.orderNumber || orderId} confirmado como pago.`);
+
+    // O aviso sai daqui, e não do carrinho, porque aqui é o único ponto onde
+    // se sabe que o dinheiro entrou. Avisar na criação do pedido encheria o
+    // seu Telegram de carrinhos abandonados.
+    await sendTelegram(montarAviso(order, payment, problemas));
+
     return jsonResponse({ updated: "paid" });
   }
 

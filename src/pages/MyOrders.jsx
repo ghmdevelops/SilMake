@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+import { useCart } from "../context/CartContext";
 import { useOrders } from "../hooks/useOrders";
 import { useSeo } from "../hooks/useSeo";
+import { startPayment, takePendingPurchase } from "../api/payment";
+import { trackEvent } from "../utils/analytics";
+import { paymentMethodLabel } from "../utils/payment";
 import { getOrderStatus, ORDER_STATUS_LABELS } from "../utils/orderStatus";
 import "../components/ProductSkeleton.css";
 import "./MyOrders.css";
@@ -55,6 +60,47 @@ export default function MyOrders() {
   // de voltar, e este endereço pode ser digitado por qualquer pessoa.
   const [searchParams] = useSearchParams();
   const pagamento = searchParams.get("pagamento");
+
+  const [payingId, setPayingId] = useState("");
+  const { showToast } = useToast();
+  const { clearCart } = useCart();
+
+  // Volta do checkout com pagamento aprovado. Dois efeitos:
+  //
+  // 1. O evento de compra do GA4 é disparado AQUI, não no carrinho — lá ele
+  //    contaria como venda todo pedido abandonado no meio do pagamento.
+  // 2. O carrinho é limpo só agora. Quem desiste no checkout volta e
+  //    encontra tudo no lugar, em vez de precisar montar de novo.
+  //
+  // takePendingPurchase apaga o registro ao ler, então recarregar a página
+  // não conta a mesma venda duas vezes.
+  useEffect(() => {
+    if (pagamento !== "sucesso") return;
+    const pendente = takePendingPurchase();
+    if (!pendente) return;
+    if (pendente.purchase) trackEvent("purchase", pendente.purchase);
+    clearCart();
+  }, [pagamento, clearCart]);
+
+  async function handlePayAgain(orderId) {
+    setPayingId(orderId);
+    const resultado = await startPayment({ uid: currentUser.uid, orderId });
+
+    if (resultado.checkoutUrl) {
+      // assign em vez de atribuir em location.href: mesma navegação, e não
+      // parece mutação de variável externa para o compilador do React.
+      window.location.assign(resultado.checkoutUrl);
+      return;
+    }
+
+    setPayingId("");
+    showToast(
+      resultado.error === "order_not_payable"
+        ? "Este pedido já foi pago."
+        : "Não foi possível abrir o pagamento agora. Tente novamente em instantes.",
+      { type: resultado.error === "order_not_payable" ? "info" : "error" }
+    );
+  }
 
   if (!authLoading && !currentUser) {
     return <Navigate to="/login" state={{ from: "/meus-pedidos" }} replace />;
@@ -214,10 +260,32 @@ export default function MyOrders() {
                 </div>
               )}
 
+              {order.paidAt && (
+                <div className="order-payment-line">
+                  <span>Pago com {paymentMethodLabel(order.paymentMethod)}</span>
+                  <span>{formatDate(order.paidAt)}</span>
+                </div>
+              )}
+
               <div className="order-total">
                 <span>Total</span>
                 <strong>{formatPrice(order.total)}</strong>
               </div>
+
+              {/* Retomar o pagamento de um pedido pendente. É o caso mais
+                  comum do checkout: a pessoa desiste no meio, ou escolhe Pix
+                  e paga depois. Sem este botão ela teria que montar o
+                  carrinho de novo — e provavelmente não voltaria. */}
+              {getOrderStatus(order) === "pending" && !order.manual && (
+                <button
+                  type="button"
+                  className="btn btn-primary order-pay-btn"
+                  onClick={() => handlePayAgain(order.id)}
+                  disabled={payingId === order.id}
+                >
+                  {payingId === order.id ? "Abrindo pagamento..." : "Pagar agora"}
+                </button>
+              )}
             </div>
           );
         })}
