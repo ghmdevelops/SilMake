@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useOrders } from "../hooks/useOrders";
 import { useSeo } from "../hooks/useSeo";
@@ -50,6 +50,12 @@ export default function MyOrders() {
   const [filter, setFilter] = useState("todos");
   const [search, setSearch] = useState("");
 
+  // Retorno do checkout do Mercado Pago. É só um aviso: quem confirma o
+  // pagamento é o webhook, não esta volta — o cliente pode fechar a aba antes
+  // de voltar, e este endereço pode ser digitado por qualquer pessoa.
+  const [searchParams] = useSearchParams();
+  const pagamento = searchParams.get("pagamento");
+
   if (!authLoading && !currentUser) {
     return <Navigate to="/login" state={{ from: "/meus-pedidos" }} replace />;
   }
@@ -70,6 +76,29 @@ export default function MyOrders() {
           ← Voltar ao perfil
         </Link>
       </div>
+
+      {pagamento && (
+        <div className={`payment-return payment-${pagamento}`} role="status">
+          {pagamento === "sucesso" && (
+            <>
+              <strong>Pagamento recebido!</strong> A confirmação pode levar alguns
+              instantes para aparecer no pedido abaixo.
+            </>
+          )}
+          {pagamento === "pendente" && (
+            <>
+              <strong>Pagamento em análise.</strong> Se você escolheu boleto ou Pix,
+              o pedido é confirmado assim que a compensação acontecer.
+            </>
+          )}
+          {pagamento === "falhou" && (
+            <>
+              <strong>O pagamento não foi concluído.</strong> Seu pedido está salvo —
+              entre em contato que a gente resolve junto.
+            </>
+          )}
+        </div>
+      )}
 
       {orders.length > 0 && (
         <div className="my-orders-filters-row">

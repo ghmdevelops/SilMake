@@ -521,6 +521,9 @@
 .admin-list-actions {
   display: flex;
   gap: 8px;
+  /* Sem isto os quatro botões insistem em ficar na mesma linha e vazam para
+     fora do card em qualquer largura apertada. */
+  flex-wrap: wrap;
 }
 
 @media (max-width: 640px) {
@@ -544,10 +547,21 @@
   }
   .admin-list-info {
     grid-area: info;
+    /* Item de grid não encolhe abaixo do conteúdo por padrão. Um nome de
+       produto longo empurrava o card inteiro para fora da tela. */
+    min-width: 0;
   }
+  /* Duas colunas em vez de fila: no celular os quatro botões viram 2x2,
+     cada um com largura suficiente para o dedo acertar. */
   .admin-list-actions {
     grid-area: actions;
     margin-top: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-width: 0;
+  }
+  .admin-list-actions .btn {
+    width: 100%;
   }
   .image-mode-toggle {
     flex-direction: column;

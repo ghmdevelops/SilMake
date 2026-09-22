@@ -14,6 +14,14 @@ export default async function handler() {
       environment,
       mode: "token",
       expiresAt: null,
+      // Só o TAMANHO, nunca o token. Colar um valor longo no painel do
+      // Netlify às vezes corta o fim, e o sintoma é idêntico ao de um token
+      // inválido: 401. Comparar este número com o do .env local resolve a
+      // dúvida em dois segundos.
+      tokenLength: directToken.length,
+      // O Melhor Envio emite tokens JWT (três partes separadas por ponto).
+      // Se vier diferente disso, o valor chegou quebrado.
+      tokenLooksValid: directToken.split(".").length === 3,
     });
   }
 

@@ -106,15 +106,25 @@ export default function AdminOrders() {
     try {
       await updateOrderPipelineStatus(order.uid, order.id, status);
 
-      // Encerrar devolve as unidades ao estoque; reabrir retira novamente.
-      await syncStockForStatusChange(order, previousStatus, status);
+      // Confirmar pagamento dá baixa; encerrar devolve as unidades.
+      const { failed } = await syncStockForStatusChange(order, previousStatus, status);
 
-      showToast(
-        status === "closed"
-          ? "Pedido encerrado e estoque devolvido"
-          : `Pedido atualizado para "${ORDER_STATUS_LABELS[status]}"`,
-        { type: "success" }
-      );
+      if (failed.length > 0) {
+        // Acontece quando dois clientes pediram a última unidade antes de
+        // você confirmar qualquer um dos dois. O pedido mudou de status
+        // mesmo assim — quem decide o que fazer é você.
+        showToast(
+          `Status alterado, mas faltou estoque para: ${failed.join(", ")}. Confira antes de enviar.`,
+          { type: "error", duration: 8000 }
+        );
+      } else {
+        showToast(
+          status === "closed"
+            ? "Pedido encerrado e estoque devolvido"
+            : `Pedido atualizado para "${ORDER_STATUS_LABELS[status]}"`,
+          { type: "success" }
+        );
+      }
       // Leva o admin junto para a aba onde o pedido foi parar.
       setTab(TAB_FOR_STATUS[status] || status);
     } catch (err) {

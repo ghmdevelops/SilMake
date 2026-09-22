@@ -3,7 +3,7 @@ import { useProducts } from "../hooks/useProducts";
 import { useShippingSettings } from "../hooks/useShippingSettings";
 import { useToast } from "../context/ToastContext";
 import { createManualOrder } from "../api/orders";
-import { decrementProductStock } from "../api/products";
+import { syncStockForStatusChange } from "../utils/stockSync";
 import { calculateShipping } from "../api/settings";
 import { fetchAddressByCep, formatCep, onlyDigits } from "../api/cep";
 import { ORDER_STATUS_LABELS } from "../utils/orderStatus";
@@ -158,16 +158,19 @@ export default function AdminManualOrder() {
         address: { street: addressText.trim(), zipCode: cep },
       });
 
-      // Mesma baixa de estoque do pedido feito pelo cliente.
-      await Promise.all(
-        items.map(async (item) => {
-          try {
-            await decrementProductStock(item.id, item.quantity);
-          } catch (err) {
-            console.error(`Erro ao dar baixa no estoque de ${item.name}:`, err);
-          }
-        })
-      );
+      // Só dá baixa se o pedido já nasce pago/enviado. Lançado como pendente,
+      // o estoque sai depois, quando você confirmar — mesma regra do pedido
+      // feito pelo cliente.
+      const { failed } = await syncStockForStatusChange({ items }, "pending", status);
+
+      if (failed.length > 0) {
+        showToast(
+          `Pedido #${orderNumber} lançado, mas faltou estoque para: ${failed.join(", ")}. Confira o cadastro.`,
+          { type: "error", duration: 8000 }
+        );
+        resetForm();
+        return;
+      }
 
       showToast(`Pedido #${orderNumber} lançado com sucesso!`, { type: "success", duration: 5000 });
       resetForm();

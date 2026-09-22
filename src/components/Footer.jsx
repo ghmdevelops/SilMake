@@ -18,6 +18,7 @@ export default function Footer() {
             <h4>Loja</h4>
             <Link to="/">Vitrine</Link>
             <Link to="/carrinho">Carrinho</Link>
+            <Link to="/dicas-de-beleza">Dicas de beleza</Link>
             <Link to="/sobre">Sobre nós</Link>
           </div>
 

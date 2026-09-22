@@ -96,15 +96,22 @@ export default function AdminOrderDetail() {
     try {
       await updateOrderPipelineStatus(order.uid, order.id, newStatus);
 
-      // Encerrar devolve as unidades ao estoque; reabrir retira novamente.
-      await syncStockForStatusChange(order, previousStatus, newStatus);
+      // Confirmar pagamento dá baixa; encerrar devolve as unidades.
+      const { failed } = await syncStockForStatusChange(order, previousStatus, newStatus);
 
-      showToast(
-        newStatus === "closed"
-          ? "Pedido encerrado e estoque devolvido"
-          : `Pedido atualizado para "${ORDER_STATUS_LABELS[newStatus]}"`,
-        { type: "success" }
-      );
+      if (failed.length > 0) {
+        showToast(
+          `Status alterado, mas faltou estoque para: ${failed.join(", ")}. Confira antes de enviar.`,
+          { type: "error", duration: 8000 }
+        );
+      } else {
+        showToast(
+          newStatus === "closed"
+            ? "Pedido encerrado e estoque devolvido"
+            : `Pedido atualizado para "${ORDER_STATUS_LABELS[newStatus]}"`,
+          { type: "success" }
+        );
+      }
     } catch (err) {
       console.error(err);
       showToast(`Erro ao atualizar${err.code ? ` (${err.code})` : ""}.`, { type: "error", duration: 6000 });

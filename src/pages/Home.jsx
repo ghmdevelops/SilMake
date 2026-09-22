@@ -8,6 +8,7 @@ import PromoCarousel from "../components/PromoCarousel";
 import StoreHero from "../components/StoreHero";
 import NewArrivals from "../components/NewArrivals";
 import RecentlyViewed from "../components/RecentlyViewed";
+import TipsBanner from "../components/TipsBanner";
 import { Search, SlidersHorizontal } from "../components/icons";
 import { matchesSearch } from "../utils/normalizeText";
 import { getDiscount } from "../utils/pricing";
@@ -139,6 +140,10 @@ export default function Home() {
         ) : (
           <StoreHero />
         ))}
+
+      {/* Logo abaixo das promoções: quem olhou os destaques e não se decidiu
+          encontra um motivo para ficar no site em vez de sair. */}
+      {!loading && <TipsBanner />}
 
       {/* Sem promoção o carrossel já está girando os mais recentes — repetir
           a seção de novidades logo abaixo mostraria os mesmos produtos duas

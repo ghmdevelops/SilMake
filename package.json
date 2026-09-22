@@ -8,7 +8,9 @@
     "dev:proxy": "node --use-system-ca ./node_modules/vite/bin/vite.js",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sitemap": "node scripts/generate-sitemap.mjs",
+    "og-image": "node scripts/generate-og-image.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^11.0.3",

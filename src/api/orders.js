@@ -12,7 +12,11 @@ function generateOrderNumber() {
 
 // Registra um pedido feito pelo cliente logado, para aparecer no histórico do
 // perfil dele e no painel do admin. Todo pedido novo começa como "pending".
-// Retorna o número do pedido gerado, para exibir na tela/mensagem de confirmação.
+//
+// Devolve os dois identificadores:
+//   orderNumber — o número amigável, mostrado ao cliente
+//   orderId     — a chave do Firebase, usada pelo pagamento para saber qual
+//                 pedido cobrar e qual marcar como pago
 export async function createOrder(uid, order) {
   const ordersRef = ref(db, `orders/${uid}`);
   const newRef = push(ordersRef);
@@ -25,7 +29,7 @@ export async function createOrder(uid, order) {
     createdAt: order.createdAt || Date.now(),
   });
 
-  return orderNumber;
+  return { orderNumber, orderId: newRef.key };
 }
 
 // Vendas fechadas fora do site (WhatsApp, Instagram, presencial) lançadas

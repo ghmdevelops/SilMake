@@ -7,6 +7,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 // plugin executa as MESMAS funções localmente, para dar para testar a
 // integração antes de publicar.
 const API_ROUTES = {
+  '/api/mp-create-preference': 'mp-create-preference',
+  '/api/mp-webhook': 'mp-webhook',
+  '/api/mp-status': 'mp-status',
+  '/api/notify-order': 'notify-order',
   '/api/shipping-quote': 'shipping-quote',
   '/api/melhorenvio/connect': 'melhorenvio-connect',
   '/api/melhorenvio/callback': 'melhorenvio-callback',
@@ -14,6 +18,11 @@ const API_ROUTES = {
 }
 
 const FORWARDED_ENV = [
+  'MP_ACCESS_TOKEN',
+  'MP_WEBHOOK_SECRET',
+  'FIREBASE_DB_SECRET',
+  'TELEGRAM_BOT_TOKEN',
+  'TELEGRAM_CHAT_ID',
   'MELHOR_ENVIO_TOKEN',
   'MELHOR_ENVIO_CLIENT_ID',
   'MELHOR_ENVIO_CLIENT_SECRET',

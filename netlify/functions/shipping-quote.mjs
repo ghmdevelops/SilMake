@@ -104,6 +104,18 @@ export default async function handler(request) {
       // token de sandbox com a loja em produção (ou o contrário), ou token
       // revogado no painel. Sem essa mensagem o erro viraria um 502 genérico.
       if (directToken) {
+        // Sem este log, o 401 do Melhor Envio não aparece em lugar nenhum e
+        // o diagnóstico vira adivinhação. A resposta deles costuma dizer se
+        // é token inválido, revogado ou de outro ambiente.
+        const detail = await response.text().catch(() => "");
+        console.error(
+          "Melhor Envio recusou o token (401).",
+          "Ambiente:",
+          getConfig().environment,
+          "Resposta:",
+          detail.slice(0, 500)
+        );
+
         return jsonResponse(
           {
             error: "invalid_token",

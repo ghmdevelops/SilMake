@@ -36,6 +36,31 @@
 # não for lido (ver o aviso do "Base directory" no topo), o site continua
 # funcionando mesmo assim.
 [[redirects]]
+  from = "/api/mp-create-preference"
+  to = "/.netlify/functions/mp-create-preference"
+  status = 200
+  force = true
+
+# Endereço avisado ao Mercado Pago. Se mudar aqui, precisa mudar lá também.
+[[redirects]]
+  from = "/api/mp-webhook"
+  to = "/.netlify/functions/mp-webhook"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/mp-status"
+  to = "/.netlify/functions/mp-status"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/notify-order"
+  to = "/.netlify/functions/notify-order"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/shipping-quote"
   to = "/.netlify/functions/shipping-quote"
   status = 200

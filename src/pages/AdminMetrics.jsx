@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAllOrders } from "../hooks/useAllOrders";
 import { useProducts } from "../hooks/useProducts";
+import { useProductCosts } from "../hooks/useProductCosts";
 import { useStats } from "../hooks/useStats";
 import { useSeo } from "../hooks/useSeo";
 import { getOrderStatus, ORDER_STATUS_LABELS } from "../utils/orderStatus";
@@ -32,6 +33,7 @@ export default function AdminMetrics() {
   // Inclui os pausados: o estoque deles continua sendo seu, e você precisa
   // saber se está acabando mesmo com o produto fora da vitrine.
   const { products } = useProducts({ includeHidden: true });
+  const costs = useProductCosts();
   const { stats } = useStats();
   const [period, setPeriod] = useState("30");
 
@@ -73,8 +75,10 @@ export default function AdminMetrics() {
   // é mostrado na tela — um lucro "bonito" que ignora metade das vendas
   // seria pior do que não ter número nenhum.
   const profitData = useMemo(() => {
+    // Os custos vêm do nó protegido, não de products — lá eles seriam
+    // legíveis por qualquer visitante.
     const costById = new Map(
-      products.map((p) => [p.id, typeof p.cost === "number" ? p.cost : null])
+      products.map((p) => [p.id, typeof costs[p.id] === "number" ? costs[p.id] : null])
     );
 
     let profit = 0;
@@ -108,7 +112,7 @@ export default function AdminMetrics() {
       margin: coveredRevenue > 0 ? (profit / coveredRevenue) * 100 : 0,
       missing: [...missing].slice(0, 4),
     };
-  }, [soldOrders, products]);
+  }, [soldOrders, products, costs]);
 
   // Contagem por status no período
   const statusCounts = useMemo(() => {

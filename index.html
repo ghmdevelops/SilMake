@@ -17,18 +17,28 @@
     <meta name="author" content="SilBeauty" />
     <link rel="canonical" href="https://silbeauty.netlify.app/" />
 
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="SilBeauty" />
     <meta property="og:title" content="SilBeauty - Sua Loja Online" />
     <meta property="og:description" content="Beleza e cuidado em cada produto, com todo o carinho da SilBeauty." />
     <meta property="og:url" content="https://silbeauty.netlify.app/" />
     <meta property="og:locale" content="pt_BR" />
+    <!-- Sem esta imagem, um link colado no WhatsApp aparece como um retângulo
+         de texto cinza, que quase ninguém clica. Precisa ser URL absoluta:
+         os robôs das redes sociais não resolvem caminho relativo. -->
+    <meta property="og:image" content="https://silbeauty.netlify.app/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="SilBeauty — maquiagem, skincare e perfumaria" />
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary" />
+    <!-- "summary_large_image" mostra a imagem grande; "summary" a deixa num
+         quadradinho ao lado do texto. -->
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="SilBeauty - Sua Loja Online" />
     <meta name="twitter:description" content="Beleza e cuidado em cada produto, com todo o carinho da SilBeauty." />
+    <meta name="twitter:image" content="https://silbeauty.netlify.app/og-image.jpg" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

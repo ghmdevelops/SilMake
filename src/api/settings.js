@@ -16,6 +16,16 @@ function toNumber(value) {
   return Number(String(value ?? "").replace(",", ".")) || 0;
 }
 
+// Entrega própria: SOMENTE quando o CEP do cliente é exatamente o mesmo da
+// loja. É proposital ser restrito — qualquer abertura (mesmo bairro, mesma
+// cidade) daria entrega gratuita a endereços que você não atende.
+export function isLocalCep(destinationCep, shipping = DEFAULT_SHIPPING) {
+  const destination = onlyDigits(destinationCep);
+  const origin = onlyDigits(shipping?.originCep);
+
+  return destination.length === 8 && origin.length === 8 && destination === origin;
+}
+
 export function saveShippingSettings({ fee, freeAbove, note, originCep }) {
   const shippingRef = ref(db, "settings/shipping");
   return set(shippingRef, {
@@ -23,6 +33,7 @@ export function saveShippingSettings({ fee, freeAbove, note, originCep }) {
     freeAbove: toNumber(freeAbove),
     note: note || "",
     // CEP de onde as encomendas saem — obrigatório para a cotação real.
+    // Também é o que define quem ganha entrega própria gratuita.
     originCep: (originCep || "").replace(/\D/g, ""),
     updatedAt: Date.now(),
   });
@@ -67,9 +78,14 @@ export function resolveShipping({
     return { fee: 0, isFree: true, pending: false };
   }
 
-  // 2. Mesmo CEP da loja: nada a transportar, é retirada/entrega local.
-  if (origin.length === 8 && destination === origin) {
-    return { fee: 0, isFree: true, pending: false, isPickup: true };
+  // 2. Mesmo CEP da loja: não há transportadora envolvida, então não há
+  // frete. Para o cliente isso é "entrega grátis" — chamar de "retirada"
+  // dava a entender que ele é quem teria que buscar.
+  //
+  // Vem ANTES da cotação de propósito: não faz sentido consultar o Melhor
+  // Envio para um endereço que você mesma vai levar.
+  if (isLocalCep(destination, shipping)) {
+    return { fee: 0, isFree: true, pending: false, isLocalDelivery: true };
   }
 
   // 3. O cliente já escolheu uma opção cotada.

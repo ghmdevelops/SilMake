@@ -14,6 +14,7 @@ import {
   User,
   UserPlus,
   Store,
+  Sparkles,
   HelpCircle,
   Package,
   Wrench,
@@ -77,6 +78,9 @@ export default function Navbar() {
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
             Loja
           </NavLink>
+          <NavLink to="/dicas-de-beleza" className={({ isActive }) => (isActive ? "active" : "")}>
+            Dicas
+          </NavLink>
           <NavLink to="/sobre" className={({ isActive }) => (isActive ? "active" : "")}>
             Sobre
           </NavLink>
@@ -133,6 +137,9 @@ export default function Navbar() {
                 <div className="dropdown-nav-links">
                   <NavLink to="/" end onClick={() => setUserMenuOpen(false)}>
                     <Store size={16} /> Loja
+                  </NavLink>
+                  <NavLink to="/dicas-de-beleza" onClick={() => setUserMenuOpen(false)}>
+                    <Sparkles size={16} /> Dicas de beleza
                   </NavLink>
                   <NavLink to="/sobre" onClick={() => setUserMenuOpen(false)}>
                     <HelpCircle size={16} /> Sobre

@@ -4,10 +4,10 @@
 // e-mails (via Firebase Authentication) vê o link "Painel Admin" e pode acessar.
 export const ADMIN_EMAILS = ["gehaime43@gmail.com"];
 
-// Bot do Telegram usado para avisar automaticamente quando um pedido é
-// finalizado, sem precisar redirecionar o cliente para lugar nenhum.
-// Veja no README como criar o bot e pegar esses valores (é grátis e leva
-// uns 5 minutos).
-export const TELEGRAM_BOT_TOKEN = "8855803786:AAGdI31MQIt3eEJYphyzROqz64m7N7suhTQ";
-export const TELEGRAM_CHAT_ID = "7377996288";
+// O bot do Telegram NÃO fica mais aqui.
+//
+// Este arquivo vai inteiro para o JavaScript que o visitante baixa — o token
+// ficava legível para qualquer pessoa. Agora ele mora nas variáveis de
+// ambiente do Netlify (TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID) e é usado só
+// pela função netlify/functions/notify-order.mjs, no servidor.
 

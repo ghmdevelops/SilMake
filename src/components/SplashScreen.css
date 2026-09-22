@@ -1,0 +1,182 @@
+.splash {
+  position: fixed;
+  inset: 0;
+  /* Acima de tudo, inclusive do menu e das gavetas. */
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.42s ease, transform 0.42s ease;
+}
+
+/* Sai crescendo de leve, como se a tela se abrisse para a loja — mais
+   agradável que simplesmente desaparecer. */
+.splash.is-leaving {
+  opacity: 0;
+  transform: scale(1.04);
+  /* Para de capturar cliques assim que começa a sair: sem isto, um toque
+     durante a transição seria engolido pela camada que já está sumindo. */
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Fundo
+   --------------------------------------------------------------------------- */
+
+.splash-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.blob-a {
+  width: 340px;
+  height: 340px;
+  top: -80px;
+  left: -60px;
+  background: rgba(236, 111, 155, 0.5);
+  animation: splash-drift-a 9s ease-in-out infinite;
+}
+
+.blob-b {
+  width: 300px;
+  height: 300px;
+  bottom: -70px;
+  right: -50px;
+  background: rgba(201, 163, 224, 0.5);
+  animation: splash-drift-b 11s ease-in-out infinite;
+}
+
+@keyframes splash-drift-a {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(38px, 26px); }
+}
+
+@keyframes splash-drift-b {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-32px, -22px); }
+}
+
+/* ---------------------------------------------------------------------------
+   Marca
+   --------------------------------------------------------------------------- */
+
+.splash-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.splash-logo {
+  display: flex;
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 10vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+}
+
+/* Cada letra sobe e aparece, uma após a outra. O atraso vem do índice
+   passado pelo componente. */
+.splash-logo span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(14px);
+  animation: splash-letter 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  animation-delay: calc(var(--i) * 45ms);
+}
+
+.splash-logo .accent {
+  color: var(--accent-1);
+}
+
+@keyframes splash-letter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.splash-tagline {
+  font-size: 0.78rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  opacity: 0;
+  /* Entra depois da última letra, para a leitura acontecer em ordem. */
+  animation: splash-fade 0.5s ease 0.42s forwards;
+}
+
+@keyframes splash-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Progresso
+   --------------------------------------------------------------------------- */
+
+/* Barra indeterminada: não promete uma porcentagem que não sabemos calcular,
+   só mostra que algo está acontecendo. */
+.splash-bar {
+  width: 120px;
+  height: 2px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+  opacity: 0;
+  animation: splash-fade 0.4s ease 0.55s forwards;
+}
+
+.splash-bar span {
+  display: block;
+  width: 45%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--accent-1), transparent);
+  animation: splash-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes splash-slide {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(330%); }
+}
+
+/* ---------------------------------------------------------------------------
+   Acessibilidade
+   --------------------------------------------------------------------------- */
+
+/* Quem pediu menos movimento no sistema recebe a mesma tela, parada: as
+   letras já visíveis, o fundo sem deriva e a saída sem escala. Nada de
+   conteúdo pode depender de animação para aparecer. */
+@media (prefers-reduced-motion: reduce) {
+  .splash,
+  .splash.is-leaving {
+    transition: opacity 0.2s ease;
+    transform: none;
+  }
+  .splash-blob {
+    animation: none;
+  }
+  .splash-logo span,
+  .splash-tagline,
+  .splash-bar {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .splash-bar span {
+    animation: none;
+    width: 100%;
+    opacity: 0.4;
+  }
+}

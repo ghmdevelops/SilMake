@@ -15,6 +15,14 @@ import {
   PHOTO_AVATAR_ID,
 } from "../utils/avatars";
 import { fileToSquareDataUrl } from "../utils/imageResize";
+import { formatCpfCnpj, isValidCpfCnpj } from "../utils/cpfCnpj";
+import {
+  DDDS,
+  formatLocalPhone,
+  isValidLocalPhone,
+  splitPhone,
+  joinPhone,
+} from "../utils/phone";
 import UserAvatar from "../components/UserAvatar";
 import "./Profile.css";
 
@@ -56,6 +64,15 @@ export default function Profile() {
 
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
+  // CPF, celular e nascimento. Os dois primeiros são pedidos pela
+  // transportadora na hora de gerar a etiqueta; o terceiro serve para você
+  // lembrar do cliente no aniversário.
+  const [cpfCnpj, setCpfCnpj] = useState("");
+  // DDD e número ficam separados: escolhendo o DDD numa lista, não há como
+  // informar um código que não existe.
+  const [ddd, setDdd] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [address, setAddress] = useState(emptyAddress);
   const [avatarId, setAvatarId] = useState("");
   const [avatarPhoto, setAvatarPhoto] = useState("");
@@ -76,6 +93,11 @@ export default function Profile() {
     setSyncedUid(currentUser.uid);
     setName(profile.name || currentUser.displayName?.split(" ")[0] || "");
     setSurname(profile.surname || "");
+    setCpfCnpj(formatCpfCnpj(profile.document || ""));
+    const saved = splitPhone(profile.phone || "");
+    setDdd(saved.ddd);
+    setPhoneNumber(formatLocalPhone(saved.number));
+    setBirthDate(profile.birthDate || "");
     setAddress({ ...emptyAddress, ...(profile.address || {}) });
     setAvatarId(profile.avatarId || "");
     setAvatarPhoto(profile.avatarPhoto || "");
@@ -145,6 +167,25 @@ export default function Profile() {
 
   async function handleSave(e) {
     e.preventDefault();
+
+    // Barra antes de salvar: documento errado só apareceria na hora de
+    // despachar, com o pedido já pago e o cliente esperando.
+    if (!isValidCpfCnpj(cpfCnpj)) {
+      showToast("CPF ou CNPJ inválido. Confira os números.", { type: "error" });
+      return;
+    }
+    if (!isValidLocalPhone(phoneNumber)) {
+      showToast("Número de telefone inválido. Celular tem 9 dígitos e começa com 9.", {
+        type: "error",
+      });
+      return;
+    }
+    // Meio telefone não serve: ou tem as duas partes, ou nenhuma.
+    if ((ddd && !phoneNumber) || (!ddd && phoneNumber)) {
+      showToast("Preencha o DDD e o número do telefone.", { type: "error" });
+      return;
+    }
+
     setSaving(true);
     try {
       const fullName = surname ? `${name} ${surname}` : name;
@@ -152,6 +193,11 @@ export default function Profile() {
       await saveUserProfile(currentUser.uid, {
         name,
         surname,
+        // Guarda só os dígitos: a máscara é coisa de tela, e assim o valor
+        // já sai pronto para a etiqueta e para comparações.
+        document: onlyDigits(cpfCnpj) || null,
+        phone: joinPhone(ddd, phoneNumber) || null,
+        birthDate: birthDate || null,
         address,
         avatarId,
         // null remove o campo no Firebase (undefined causaria erro).
@@ -351,6 +397,66 @@ export default function Profile() {
           <label>
             E-mail
             <input className="input" value={currentUser.email || ""} disabled />
+          </label>
+
+          <div className="profile-form-grid">
+            <label>
+              CPF ou CNPJ
+              <input
+                className="input"
+                value={cpfCnpj}
+                onChange={(e) => setCpfCnpj(formatCpfCnpj(e.target.value))}
+                placeholder="000.000.000-00"
+                inputMode="numeric"
+                maxLength={18}
+                autoComplete="off"
+              />
+              <small>Pedido pelas transportadoras para emitir a etiqueta de envio.</small>
+            </label>
+
+            <div className="profile-phone-field">
+              <span className="profile-phone-label">Celular</span>
+              <div className="profile-phone-inputs">
+                <select
+                  className="input profile-ddd"
+                  value={ddd}
+                  onChange={(e) => setDdd(e.target.value)}
+                  aria-label="DDD"
+                >
+                  <option value="">DDD</option>
+                  {DDDS.map((item) => (
+                    <option key={item.ddd} value={item.ddd}>
+                      {item.ddd} · {item.uf}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  className="input"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(formatLocalPhone(e.target.value))}
+                  placeholder="99999-9999"
+                  inputMode="tel"
+                  maxLength={10}
+                  autoComplete="tel-national"
+                  aria-label="Número do telefone"
+                />
+              </div>
+              <small>Para falarmos com você sobre o pedido e a entrega.</small>
+            </div>
+          </div>
+
+          <label className="profile-birthdate">
+            Data de nascimento
+            <input
+              className="input"
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              // Impede data no futuro, que só pode ser erro de digitação.
+              max={new Date().toISOString().slice(0, 10)}
+              autoComplete="bday"
+            />
+            <small>Opcional — é como a gente lembra de você no seu mês.</small>
           </label>
 
           <h3 className="profile-section-title">Endereço de entrega</h3>

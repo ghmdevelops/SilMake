@@ -12,7 +12,7 @@ import { fetchShippingQuote } from "../api/shippingQuote";
 import { formatCep, onlyDigits } from "../api/cep";
 import { useSeo } from "../hooks/useSeo";
 import { createOrder } from "../api/orders";
-import { decrementProductStock } from "../api/products";
+import { startPayment } from "../api/payment";
 import { hasStockControl } from "../utils/stock";
 import { sendTelegramNotification } from "../utils/telegram";
 import "./Cart.css";
@@ -93,7 +93,7 @@ export default function Cart() {
   const {
     fee: shippingFee,
     pending: shippingPending,
-    isPickup,
+    isLocalDelivery,
     toBeArranged,
   } = resolveShipping({
     subtotal: totalPrice,
@@ -114,16 +114,26 @@ export default function Cart() {
     if (!shipping.originCep) return;
     if (onlyDigits(cep).length !== 8) return;
     if (items.length === 0 || reachedFreeShipping) return;
+    // Endereço que você mesma entrega não precisa de transportadora — cotar
+    // aqui gastaria chamada à API e ainda ofereceria PAC/SEDEX ao lado de uma
+    // entrega que já é grátis.
+    if (isLocalDelivery) return;
 
     runQuote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoQuoteKey, reachedFreeShipping]);
+  }, [autoQuoteKey, reachedFreeShipping, isLocalDelivery]);
 
   // Botão "Calcular": valida o CEP antes de cotar.
   function handleQuote(e) {
     e?.preventDefault();
     if (onlyDigits(cep).length !== 8) {
       setQuoteError("Digite os 8 números do CEP.");
+      return;
+    }
+    if (isLocalDelivery) {
+      setOptions([]);
+      setSelectedOption(null);
+      setQuoteError("");
       return;
     }
     runQuote();
@@ -259,8 +269,9 @@ export default function Cart() {
     );
 
     let orderNumber = "";
+    let orderId = "";
     try {
-      orderNumber = await createOrder(currentUser.uid, {
+      ({ orderNumber, orderId } = await createOrder(currentUser.uid, {
         items: items.map((item) => ({
           id: item.id,
           name: item.name,
@@ -273,8 +284,10 @@ export default function Cart() {
         // etiqueta depois (e o cliente ver no histórico).
         shippingService: selectedOption
           ? `${selectedOption.company} ${selectedOption.name}`.trim()
-          : isPickup
-            ? "Retirada no local"
+          : isLocalDelivery
+            // No pedido o texto é mais explícito de propósito: você precisa
+            // saber que este não vai para a transportadora, é entrega sua.
+            ? "Entrega local (grátis) — não enviar pelos Correios"
             : toBeArranged
               ? "A COMBINAR — frete não cotado"
               : "",
@@ -284,7 +297,7 @@ export default function Cart() {
         customerName: currentUser.displayName || "",
         customerEmail: currentUser.email || "",
         createdAt: now,
-      });
+      }));
     } catch (err) {
       // Se o pedido não foi salvo, nada mais pode seguir: não damos baixa no
       // estoque, não avisamos o admin e não limpamos o carrinho — senão o
@@ -297,16 +310,10 @@ export default function Cart() {
       return;
     }
 
-    // Dá baixa no estoque de cada item (produtos sem controle são ignorados).
-    await Promise.all(
-      items.map(async (item) => {
-        try {
-          await decrementProductStock(item.id, item.quantity);
-        } catch (err) {
-          console.error(`Erro ao dar baixa no estoque de ${item.name}:`, err);
-        }
-      })
-    );
+    // A baixa de estoque NÃO acontece aqui, e sim quando o admin confirma o
+    // pagamento. Antes era neste ponto, o que obrigava a regra do Firebase a
+    // liberar escrita no estoque para qualquer pessoa logada — bastava criar
+    // uma conta para zerar o estoque da loja inteira. Veja utils/stockSync.js.
 
     const message = [
       `🛍️ Novo pedido${orderNumber ? ` #${orderNumber}` : ""} na SilBeauty!`,
@@ -356,6 +363,21 @@ export default function Cart() {
     });
 
     clearCart();
+
+    // Pagamento online: tenta levar o cliente ao checkout do Mercado Pago.
+    // O pedido JÁ está salvo neste ponto — se o pagamento não estiver
+    // configurado ou falhar, ele segue para o histórico e o acerto acontece
+    // como sempre, por fora. Nenhuma venda se perde por isso.
+    const pagamento = await startPayment({ uid: currentUser.uid, orderId });
+
+    if (pagamento.checkoutUrl) {
+      window.location.href = pagamento.checkoutUrl;
+      return;
+    }
+
+    if (pagamento.error && pagamento.error !== "sem_funcao" && pagamento.error !== "not_configured") {
+      console.warn("Pagamento online indisponível:", pagamento.error, pagamento.message);
+    }
 
     // Leva o cliente direto para o histórico, onde ele acompanha o status
     // e o rastreio do pedido que acabou de fazer.
@@ -442,6 +464,16 @@ export default function Cart() {
 
               {quoteError && <span className="cart-quote-error">{quoteError}</span>}
 
+              {/* Sem este aviso, o cliente digitaria o CEP e não veria opção
+                  nenhuma — pareceria que a cotação falhou, quando na verdade
+                  ele ganhou entrega gratuita. */}
+              {isLocalDelivery && (
+                <span className="cart-local-delivery">
+                  Você está na nossa área de entrega — <strong>entrega grátis</strong>, combinamos
+                  o melhor horário com você.
+                </span>
+              )}
+
               {options.length > 0 && (
                 <div className="cart-quote-options">
                   {options.map((option) => (
@@ -493,7 +525,7 @@ export default function Cart() {
               <span>{formatPrice(shippingFee)}</span>
             ) : (
               <span className="cart-free-shipping">
-                {isPickup ? "Grátis (retirada)" : "Grátis"}
+                {isLocalDelivery ? "Entrega grátis" : "Grátis"}
               </span>
             )}
           </div>

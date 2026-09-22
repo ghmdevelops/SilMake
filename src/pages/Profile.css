@@ -54,6 +54,18 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  /* Item de flex não encolhe abaixo do conteúdo por padrão. Um <input> tem
+     largura natural de ~20 caracteres, então o formulário inteiro ficava
+     mais largo que o cartão e vazava pela borda direita. */
+  min-width: 0;
+}
+
+/* Cada campo ocupa a largura da sua coluna, em vez da largura natural do
+   input. Sem isto, duas colunas de input somavam mais que o espaço
+   disponível. */
+.profile-form .input {
+  width: 100%;
+  min-width: 0;
 }
 
 .profile-form-grid {
@@ -62,12 +74,50 @@
   gap: 14px;
 }
 
+/* Mesma razão do min-width acima, agora para os itens do grid. */
+.profile-form-grid > * {
+  min-width: 0;
+}
+
 .profile-form-grid-3 {
   grid-template-columns: 1fr 2fr;
 }
 
 .profile-form-grid-3 .span-2 {
   grid-column: span 1;
+}
+
+/* Telefone: o DDD é um seletor e o número um campo de texto. Como são dois
+   controles sob um rótulo só, o conjunto imita a estrutura de um <label>
+   normal para ficar alinhado com os campos vizinhos do formulário. */
+.profile-phone-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-phone-label {
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.profile-phone-inputs {
+  display: flex;
+  gap: 8px;
+}
+
+/* Largura fixa: cabe "11 · SP" e não rouba espaço do número.
+   O seletor precisa ser tão específico quanto ".profile-form .input", que
+   aplica width:100% em todos os campos — senão o DDD ocupa a linha inteira
+   e o número some. */
+.profile-form .profile-ddd {
+  width: 108px;
+  flex-shrink: 0;
+}
+
+.profile-phone-inputs .input:not(.profile-ddd) {
+  flex: 1;
+  min-width: 0;
 }
 
 .profile-section-title {

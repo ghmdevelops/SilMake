@@ -6,6 +6,7 @@ import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useToast } from "../context/ToastContext";
 import { useSeo } from "../hooks/useSeo";
+import { useProductSchema } from "../hooks/useProductSchema";
 import { useShippingSettings } from "../hooks/useShippingSettings";
 import { isOutOfStock, isLowStock, hasStockControl } from "../utils/stock";
 import { getDiscount } from "../utils/pricing";
@@ -13,6 +14,8 @@ import { trackProductView, trackAddToCart } from "../api/stats";
 import { fetchExtraImages } from "../api/productImages";
 import { useRecentlyViewed } from "../hooks/useRecentlyViewed";
 import RecentlyViewed from "../components/RecentlyViewed";
+import ShareProduct from "../components/ShareProduct";
+import { Heart } from "../components/icons";
 import ProductCard from "../components/ProductCard";
 import "../components/ProductSkeleton.css";
 import "./ProductDetail.css";
@@ -46,7 +49,15 @@ export default function ProductDetail() {
   useSeo({
     title: product?.name,
     description: product?.description || `Confira ${product?.name || "este produto"} na loja SilBeauty.`,
+    // A foto do produto vira a prévia do link. Só serve se for URL completa:
+    // foto enviada por upload é um data: URL, que nenhuma rede social
+    // consegue buscar — nesse caso fica a imagem padrão da loja.
+    image: product?.image?.startsWith("http") ? product.image : undefined,
+    type: "product",
   });
+
+  // Preço e disponibilidade no resultado do Google.
+  useProductSchema(product);
 
   // Ao abrir outro produto (pelos "relacionados", por exemplo), o React
   // reaproveita este mesmo componente — então reiniciamos o que é específico
@@ -169,32 +180,8 @@ export default function ProductDetail() {
     });
   }
 
-  async function handleShare() {
-    const url = window.location.href;
-    const shareData = {
-      title: product.name,
-      text: `Olha esse produto na SilBeauty: ${product.name} — ${formatPrice(product.price)}`,
-      url,
-    };
-
-    // No celular, abre a folha de compartilhamento nativa (WhatsApp, Instagram,
-    // etc). No desktop, onde isso quase nunca existe, copia o link.
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch {
-        return; // cliente cancelou o compartilhamento
-      }
-    }
-
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast("Link copiado! Cole onde quiser compartilhar.", { type: "success" });
-    } catch {
-      showToast("Não foi possível copiar o link.", { type: "error" });
-    }
-  }
+  // Compartilhar agora vive no componente ShareProduct, que também gera a
+  // arte para Stories.
 
   return (
     <div className="product-detail-page">
@@ -309,11 +296,10 @@ export default function ProductDetail() {
               onClick={handleToggleFavorite}
               aria-pressed={favorite}
             >
-              {favorite ? "♥ Nos favoritos" : "♡ Favoritar"}
+              <Heart size={16} filled={favorite} />
+              {favorite ? "Nos favoritos" : "Favoritar"}
             </button>
-            <button className="detail-icon-btn" onClick={handleShare}>
-              ↗ Compartilhar
-            </button>
+            <ShareProduct product={product} />
           </div>
 
           <Link to="/" className="detail-back">

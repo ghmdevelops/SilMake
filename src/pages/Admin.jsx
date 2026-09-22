@@ -7,6 +7,8 @@ import {
   deleteExtraImages,
   MAX_PRODUCT_IMAGES,
 } from "../api/productImages";
+import { saveProductCost, deleteProductCost } from "../api/productCosts";
+import { useProductCosts } from "../hooks/useProductCosts";
 import { fileToResizedDataUrl, dataUrlSizeKb } from "../utils/imageResize";
 import { Link } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
@@ -55,6 +57,8 @@ function formatPrice(value) {
 export default function Admin() {
   const [tab, setTab] = useState("produtos"); // "produtos" | "pedidos"
   const { products, loading } = useProducts({ includeHidden: true });
+  // Custos vêm de um nó separado, legível só pela conta admin.
+  const costs = useProductCosts();
   const { showToast } = useToast();
   const [form, setForm] = useState(emptyForm);
   const [imageMode, setImageMode] = useState("url"); // "url" | "upload"
@@ -152,7 +156,7 @@ export default function Admin() {
       name: `${product.name} (cópia)`,
       price: product.price || "",
       oldPrice: product.oldPrice || "",
-      cost: product.cost ?? "",
+      cost: costs[product.id] ?? "",
       category: product.category || "",
       description: product.description || "",
       images: [product.image, ...extras].filter(Boolean),
@@ -254,7 +258,7 @@ export default function Admin() {
       name: product.name || "",
       price: product.price || "",
       oldPrice: product.oldPrice || "",
-      cost: product.cost ?? "",
+      cost: costs[product.id] ?? "",
       category: product.category || "",
       description: product.description || "",
       images: [product.image, ...extras].filter(Boolean),
@@ -295,8 +299,9 @@ export default function Admin() {
   async function handleDelete(id, name) {
     if (!confirm("Tem certeza que deseja excluir este produto?")) return;
     await deleteProduct(id);
-    // Sem isso as fotos extras ficariam órfãs no banco para sempre.
+    // Sem isso, fotos extras e custo ficariam órfãos no banco para sempre.
     await deleteExtraImages(id);
+    await deleteProductCost(id);
     if (editingId === id) resetForm();
     showToast(`${name} foi excluído`, { type: "info" });
   }
@@ -319,13 +324,14 @@ export default function Admin() {
         // senão não há desconto para mostrar. null remove o campo.
         oldPrice:
           Number(form.oldPrice) > Number(form.price) ? Number(form.oldPrice) : null,
-        // Vazio vira null em vez de 0: custo zero é um dado válido (brinde),
-        // e confundir os dois inflaria o lucro nas métricas.
-        cost: form.cost === "" ? null : Math.max(0, Number(form.cost)),
+        // Limpa o campo antigo nos produtos já cadastrados: sem isto, o custo
+        // continuaria exposto em products mesmo depois da mudança.
+        cost: null,
         category: normalizeCategory(form.category, categories),
         description: form.description.trim(),
-        // Só a principal fica no produto: é a que a vitrine precisa. As
-        // outras vão para o nó separado, logo abaixo.
+        // O custo NÃO entra aqui: "products" tem leitura pública, então
+        // qualquer visitante veria a sua margem. Vai para productCosts,
+        // logo abaixo.
         image: (form.images[0] || "").trim(),
         promotion: !!form.promotion,
         hidden: !!form.hidden,
@@ -342,11 +348,13 @@ export default function Admin() {
       if (editingId) {
         await updateProduct(editingId, payload);
         await saveExtraImages(editingId, extras);
+        await saveProductCost(editingId, form.cost);
         showToast("Produto atualizado com sucesso", { type: "success" });
       } else {
-        // Precisamos do id gerado para gravar as fotos extras.
+        // Precisamos do id gerado para gravar as fotos extras e o custo.
         const newId = await createProduct(payload);
         await saveExtraImages(newId, extras);
+        await saveProductCost(newId, form.cost);
         showToast("Produto adicionado com sucesso", { type: "success" });
       }
       resetForm();

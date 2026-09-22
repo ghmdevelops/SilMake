@@ -30,18 +30,30 @@ export function deleteProduct(id) {
 // Usa transação para evitar que dois clientes comprem a última unidade ao
 // mesmo tempo. Produtos sem controle de estoque (campo ausente/null) são
 // ignorados. Retorna true se a baixa foi feita.
+// Devolve { committed, reason }. O motivo importa: a transação é abortada
+// tanto quando o produto não tem controle de estoque quanto quando falta
+// saldo, e quem chama precisa distinguir — só o segundo caso é um problema
+// que merece aviso na tela.
 export async function decrementProductStock(productId, quantity) {
   const stockRef = ref(db, `products/${productId}/stock`);
+  let reason = "ok";
 
   const result = await runTransaction(stockRef, (currentStock) => {
     // Produto sem controle de estoque: não mexe em nada.
-    if (typeof currentStock !== "number") return undefined;
+    if (typeof currentStock !== "number") {
+      reason = "sem-controle";
+      return undefined;
+    }
     // Estoque insuficiente: aborta a transação.
-    if (currentStock < quantity) return;
+    if (currentStock < quantity) {
+      reason = "insuficiente";
+      return undefined;
+    }
+    reason = "ok";
     return currentStock - quantity;
   });
 
-  return result.committed;
+  return { committed: result.committed, reason };
 }
 
 // Devolve unidades ao estoque — usado quando o admin encerra/cancela um

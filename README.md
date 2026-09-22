@@ -1,41 +1,128 @@
-# SilBeauty
+<div align="center">
 
-E-commerce simples feito em React (Vite) que se conecta direto ao Firebase Realtime Database. Permite cadastrar produtos (com imagem por link ou upload), exibi-los na vitrine e usar um carrinho de compras simples.
+<img src="public/og-image.jpg" alt="SilBeauty — beleza e cuidado" width="620" />
 
-## Estrutura
+<br />
 
-Todo o projeto vive nesta pasta (`client`), inclusive o `netlify.toml`.
+**Loja online de maquiagem, skincare e perfumaria.**
+Vitrine, carrinho, pedidos, frete calculado e painel de gestão — tudo numa aplicação só.
 
-```
-src/
-  firebase.js           -> configuração do Firebase (já preenchida)
-  config.js             -> e-mails de admin e dados do Telegram
-  hooks/                -> leitura em tempo real (produtos, pedidos, perfil...)
-  api/                  -> produtos, pedidos, frete, configurações, métricas
-  context/              -> carrinho, favoritos, autenticação, avisos
-  components/           -> Navbar, Footer, ProductCard, carrossel, gavetas...
-  pages/
-    Home.jsx            -> vitrine (busca, filtros, categorias)
-    ProductDetail.jsx   -> página do produto
-    Cart.jsx            -> carrinho e fechamento do pedido
-    Admin.jsx           -> painel de produtos, frete e métricas (exige login)
-netlify/functions/      -> funções de servidor (cotação de frete, OAuth)
-public/                 -> ícones, robots.txt, sitemap.xml, _redirects
-netlify.toml            -> configuração de deploy
-```
+<br />
 
-## Rodando o projeto
+[![React](https://img.shields.io/badge/React-19-16161c?style=flat-square&logo=react&logoColor=ec6f9b)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-8-16161c?style=flat-square&logo=vite&logoColor=ec6f9b)](https://vite.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-Realtime%20DB-16161c?style=flat-square&logo=firebase&logoColor=ec6f9b)](https://firebase.google.com)
+[![Netlify](https://img.shields.io/badge/Netlify-Functions-16161c?style=flat-square&logo=netlify&logoColor=ec6f9b)](https://netlify.com)
+[![PWA](https://img.shields.io/badge/PWA-instal%C3%A1vel-16161c?style=flat-square&logo=pwa&logoColor=ec6f9b)](#pwa-app-instalável)
+
+**[silbeauty.netlify.app](https://silbeauty.netlify.app)**
+
+</div>
+
+---
+
+## O que a loja faz
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🛍️ Para quem compra
+
+- Vitrine com busca que **ignora acentos**, filtros por categoria, preço e ordenação
+- Página do produto com **até 3 fotos**, zoom, relacionados e vistos recentemente
+- Carrinho com **frete real** (Melhor Envio) e frete grátis por valor
+- Conta própria: pedidos, endereço, CPF e avatar
+- Favoritos, compartilhar produto e **arte pronta para Stories**
+- Página de **dicas de beleza** com 66 orientações práticas
+- Funciona como **app instalável** no celular
+
+</td>
+<td width="50%" valign="top">
+
+### 📊 Para quem vende
+
+- Cadastro de produtos com fotos, estoque, medidas e **custo**
+- Pedidos com status, rastreio e **lista de separação imprimível**
+- Métricas: faturamento, **lucro e margem**, ticket médio e conversão
+- **Relatório de reposição**: o que acaba primeiro
+- Buscas sem resultado — o que pedem e você não tem
+- Pedido manual, clientes, exportação em CSV
+- Aviso de venda **no seu Telegram**, na hora
+
+</td>
+</tr>
+</table>
+
+---
+
+## Começando
 
 ```bash
 npm install
 npm run dev
 ```
 
-Acesse http://localhost:5173 (ou a porta indicada no terminal).
+Abra http://localhost:5173 (ou a porta indicada no terminal).
 
-## Protegendo o painel Admin
+> ⚠️ Antes do primeiro uso, o Firebase precisa de configuração: **métodos de login** e **regras do banco**. Veja [Passo obrigatório no Firebase Console](#️-passo-obrigatório-no-firebase-console).
 
-O acesso ao `/admin` é protegido por login de verdade (Firebase Authentication) — veja a seção "Login, cadastro e painel Admin" abaixo para os detalhes e o passo a passo de configuração no Firebase Console.
+### Comandos
+
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Servidor local, com as funções do Netlify emuladas |
+| `npm run build` | Gera o site em `dist/` |
+| `npm run lint` | Verifica o código |
+| `npm run sitemap` | Regenera o `sitemap.xml` com os produtos |
+| `npm run og-image` | Regenera a imagem de prévia dos links |
+
+---
+
+## Como o projeto está organizado
+
+Todo o projeto vive nesta pasta (`client`), inclusive o `netlify.toml`.
+
+```
+src/
+  firebase.js           -> configuração do Firebase e App Check
+  config.js             -> e-mails com acesso ao painel
+  hooks/                -> leitura em tempo real (produtos, pedidos, perfil...)
+  api/                  -> produtos, custos, fotos, pedidos, frete, métricas
+  context/              -> carrinho, favoritos, autenticação, avisos
+  components/           -> Navbar, ProductCard, carrossel, ícones, gavetas...
+  data/beautyTips.js    -> conteúdo da página de dicas
+  utils/                -> preço, estoque, CPF, telefone, arte de Stories
+  pages/
+    Home.jsx            -> vitrine (busca, filtros, categorias)
+    ProductDetail.jsx   -> página do produto
+    Cart.jsx            -> carrinho e fechamento do pedido
+    Admin.jsx           -> painel de produtos, frete e métricas (exige login)
+netlify/functions/      -> funções de servidor (frete, Telegram, OAuth)
+scripts/                -> ícones, sitemap, imagem de prévia, migrações
+public/                 -> ícones, robots.txt, sitemap.xml, _redirects
+firebase-rules.json     -> regras do banco, prontas para colar no console
+netlify.toml            -> configuração de deploy
+```
+
+### Onde fica cada coisa
+
+| Preciso mexer em... | Arquivo |
+|---|---|
+| Quem acessa o painel | `src/config.js` |
+| Regras de segurança do banco | `firebase-rules.json` |
+| Texto das dicas de beleza | `src/data/beautyTips.js` |
+| Cores e fontes | `src/index.css` (variáveis no topo) |
+| Ícones da interface | `src/components/icons.jsx` |
+| Rotas e cabeçalhos do deploy | `netlify.toml` |
+
+---
+
+## Acesso ao painel
+
+O `/admin` é protegido por login real (Firebase Authentication). Só entra quem faz login com um e-mail listado em `ADMIN_EMAILS`, em `src/config.js`.
+
+A proteção que **de fato** importa não é essa tela: são as regras do Firebase. Mesmo que alguém force a rota no navegador, o banco recusa qualquer escrita que não venha da conta admin.
 
 ## Login, cadastro e painel Admin (Firebase Authentication)
 
@@ -50,29 +137,34 @@ O site agora tem login de verdade:
 
 1. **Ativar os métodos de login**: vá em *Authentication → Sign-in method* e habilite **"E-mail/senha"** e **"Google"**. Sem isso, login/cadastro não funcionam.
 2. **Criar a conta de admin**: acesse `/cadastro` no site com o e-mail `gehaime43@gmail.com` (o mesmo que está em `ADMIN_EMAILS`) para criar sua conta de administrador.
-3. **Atualizar as regras do Realtime Database** (Realtime Database → Regras), substituindo a regra pública antiga por:
+3. **Atualizar as regras do Realtime Database** (Realtime Database → Regras). O conteúdo está em `firebase-rules.json`, na raiz de `client/` — copie o arquivo inteiro e cole no console. É a versão oficial; o bloco abaixo é o mesmo, repetido aqui para leitura:
 
-```json
+`json
 {
   "rules": {
     "products": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'gehaime43@gmail.com'",
-      "$productId": {
-        "stock": {
-          ".write": "auth != null",
-          ".validate": "newData.isNumber() && newData.val() >= 0 && (auth.token.email == 'gehaime43@gmail.com' || newData.val() < data.val())"
-        }
-      }
+      ".write": "auth != null && auth.token.email == 'gehaime43@gmail.com'"
     },
+
     "productImages": {
       ".read": true,
       ".write": "auth != null && auth.token.email == 'gehaime43@gmail.com'"
     },
+
+    "productCosts": {
+      ".read": "auth != null && auth.token.email == 'gehaime43@gmail.com'",
+      ".write": "auth != null && auth.token.email == 'gehaime43@gmail.com'",
+      "$productId": {
+        ".validate": "newData.isNumber() && newData.val() >= 0"
+      }
+    },
+
     "settings": {
       ".read": true,
       ".write": "auth != null && auth.token.email == 'gehaime43@gmail.com'"
     },
+
     "stats": {
       ".read": "auth != null && auth.token.email == 'gehaime43@gmail.com'",
       "$tipo": {
@@ -82,12 +174,20 @@ O site agora tem login de verdade:
         }
       }
     },
+
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null && auth.uid == $uid"
+        ".write": "auth != null && auth.uid == $uid",
+        "avatarPhoto": {
+          ".validate": "newData.isString() && newData.val().length <= 60000"
+        },
+        "$campo": {
+          ".validate": "!newData.isString() || newData.val().length <= 300"
+        }
       }
     },
+
     "orders": {
       ".read": "auth != null && auth.token.email == 'gehaime43@gmail.com'",
       "$uid": {
@@ -99,17 +199,33 @@ O site agora tem login de verdade:
             ".validate": "newData.val() == 'pending' || auth.token.email == 'gehaime43@gmail.com'"
           },
           "total": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
           },
           "subtotal": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
           },
           "shippingFee": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 500"
           },
+          "createdAt": {
+            ".validate": "auth.token.email == 'gehaime43@gmail.com' || (newData.isNumber() && newData.val() <= now + 60000)"
+          },
+          "customerName": {
+            ".validate": "newData.isString() && newData.val().length <= 120"
+          },
+          "customerEmail": {
+            ".validate": "newData.isString() && newData.val().length <= 160"
+          },
           "items": {
+            ".validate": "!newData.hasChild('60')",
             "$index": {
               ".validate": "newData.hasChildren(['id', 'name', 'price', 'quantity'])",
+              "id": {
+                ".validate": "newData.isString() && newData.val().length <= 64"
+              },
+              "name": {
+                ".validate": "newData.isString() && newData.val().length <= 200"
+              },
               "price": {
                 ".validate": "auth.token.email == 'gehaime43@gmail.com' || (newData.parent().child('id').isString() && newData.val() == root.child('products').child(newData.parent().child('id').val()).child('price').val())"
               },
@@ -126,8 +242,18 @@ O site agora tem login de verdade:
 ```
 
 O que essa regra garante:
-- **Produtos**: todo mundo pode *ler* (para a loja funcionar); só a conta admin pode criar/editar/excluir. **Exceção controlada**: um cliente logado pode alterar apenas o campo `stock`, e apenas para **diminuir** (nunca aumentar) — é isso que permite a baixa automática de estoque quando ele compra.
+- **Produtos**: todo mundo pode *ler* (para a loja funcionar); **só a conta admin escreve**, inclusive no estoque. Até pouco tempo havia uma exceção que deixava qualquer cliente logado diminuir o campo `stock`, para a baixa acontecer no checkout. Ela foi removida: bastava criar uma conta para zerar o estoque da loja inteira. Agora a baixa acontece quando **você confirma o pagamento** — veja "Como o estoque é baixado" abaixo.
 - **Fotos extras** (`productImages`): leitura pública, escrita só pela conta admin. Guarda a 2ª e a 3ª foto de cada produto — veja "Fotos do produto" mais abaixo para entender por que elas não ficam junto do produto.
+- **Custos** (`productCosts`): **leitura e escrita só pela conta admin**. É o único nó do banco que o público não lê. Guarda quanto você pagou por cada produto.
+
+  ⚠️ Esse dado **não pode** voltar para dentro de `products`. Aquele nó tem leitura pública (a vitrine precisa dos produtos sem login), e a permissão do Firebase é por nó, não por campo — não há como liberar o preço e esconder o custo no mesmo lugar. Com o custo em `products`, qualquer pessoa via a sua margem abrindo `https://<seu-banco>.firebaseio.com/products.json` no navegador, sem login e sem ferramenta.
+
+  Se você tem produtos cadastrados de antes dessa mudança, rode a migração uma vez:
+
+  ```bash
+  node scripts/migrate-costs.mjs            # mostra o que faria
+  node scripts/migrate-costs.mjs --aplicar  # move de verdade
+  ```
 - **Configurações** (`settings`): leitura pública (a loja precisa saber o valor do frete antes do login) e escrita só pela conta admin, na aba **Frete** do painel.
 - **Estatísticas** (`stats`): qualquer visitante pode **somar 1** a um contador (é assim que a loja registra visitas a produtos), mas **só a conta admin lê** os números. A regra `newData.val() == data.val() + 1` garante que ninguém consegue escrever um valor arbitrário — só incrementar de um em um. Nenhum dado pessoal é gravado ali, apenas contagens.
 - **Perfil** (`users`): cada cliente só lê/escreve os **seus próprios** dados.
@@ -140,7 +266,24 @@ O que essa regra garante:
 
 ⚠️ **Limitação que permanece** (sem servidor próprio): as regras do Firebase não têm laço/soma, então o campo `total` não pode ser recalculado por elas. Com os preços, quantidades e frete já validados individualmente, a única manipulação possível é enviar um `total` que não corresponde à soma. Para cobrir isso, o painel admin **recalcula o valor esperado de todo pedido** e exibe um alerta vermelho de "Valor divergente" na lista e no detalhe do pedido — então você vê a diferença antes de confirmar o envio. Uma Cloud Function eliminaria até esse caso.
 
-⚠️ **Outra porta conhecida**: como o cliente precisa poder **diminuir** o estoque (para a baixa automática funcionar), alguém mal-intencionado poderia zerar o estoque de um produto por sabotagem. Ele não consegue aumentar, e você reverte em segundos no admin — mas vale saber que existe.
+### Como o estoque é baixado
+
+A baixa acontece **quando você confirma o pagamento** no painel, e não quando o cliente finaliza a compra.
+
+| Mudança de status | O que acontece no estoque |
+|---|---|
+| Pendente → Pago | Sai do estoque |
+| Pago → Enviado / Finalizado | Nada (os dois já seguram) |
+| Pago → Encerrado | Volta para o estoque |
+| Encerrado → Pago | Sai de novo |
+
+**Por que não é mais no checkout:** para o navegador do cliente dar baixa, a regra do Firebase precisava liberar escrita no campo `stock` para qualquer pessoa logada. Bastava criar uma conta e rodar um script para zerar o estoque da loja inteira. Movendo a baixa para a confirmação, `stock` passou a ser escrita exclusiva do admin e o buraco fechou.
+
+⚠️ **A troca que isso implica:** o estoque não fica mais reservado no momento do pedido. Dois clientes conseguem pedir a última unidade antes de você confirmar qualquer um dos dois. Nesse caso, ao confirmar o segundo, o painel avisa **"faltou estoque para: ..."** e o status muda mesmo assim — quem decide o que fazer é você. O carrinho continua barrando quem tenta pedir mais do que existe no momento da compra.
+
+A eliminação completa dos dois problemas exigiria criar o pedido e baixar o estoque num servidor (Cloud Function ou função do Netlify com chave de administrador), de forma atômica.
+
+⚠️ **Limitação relacionada**: o arquivo `src/utils/stockSync.js` concentra essa lógica. Se um dia você acrescentar um status novo, lembre-se de dizer lá se ele segura estoque ou não (`STOCK_HELD_STATUSES`, em `src/utils/orderStatus.js`).
 
 ⚠️ Se você adicionar mais e-mails em `ADMIN_EMAILS` no futuro, lembre-se de atualizar também o e-mail (ou lista de e-mails) nessa regra do Firebase — eles não se sincronizam automaticamente, já que a regra vive no console do Firebase, fora do código do site.
 
@@ -179,6 +322,48 @@ Passos para publicar:
 3. Defina o **Base directory** como `client` (veja o aviso acima).
 4. Cadastre as variáveis de ambiente (veja a seção do Melhor Envio).
 5. Depois do deploy, siga o passo a passo da seção "Login, cadastro e painel Admin" para ativar o Firebase Authentication e as regras do banco.
+
+## SEO e compartilhamento
+
+### Imagem de prévia dos links
+
+Quando alguém cola um link da loja no WhatsApp, Instagram ou Facebook, aparece um cartão com imagem, título e descrição. Sem imagem, esse cartão vira um retângulo de texto cinza — e quase ninguém clica.
+
+A imagem fica em `public/og-image.jpg` (1200×630, o tamanho que essas redes esperam) e é gerada por script:
+
+```bash
+npm run og-image
+```
+
+Para mudar o texto ou as cores, edite o SVG dentro de `scripts/generate-og-image.mjs` e rode de novo.
+
+### ⚠️ Limitação importante: prévia por produto
+
+As páginas de produto definem a própria imagem e descrição pelo `useSeo`. **Isso funciona no Google, mas não no WhatsApp.**
+
+O motivo: o Google executa o JavaScript antes de indexar; os robôs do WhatsApp, Facebook e Telegram **não**. Eles leem o HTML cru, que é sempre o mesmo `index.html`. Na prática, compartilhar o link de um produto específico mostra a imagem padrão da loja, não a foto daquele produto.
+
+Resolver isso exige entregar HTML já pronto para os robôs — uma Edge Function do Netlify que injeta as tags lendo o produto pela API REST do Firebase. Não está implementado.
+
+Enquanto isso, o botão **"Arte para Stories"** (em cada produto) cobre o caso prático: gera a imagem do produto pronta para postar.
+
+### Dados estruturados
+
+A página de produto publica um bloco JSON-LD do tipo `Product` (`src/hooks/useProductSchema.js`), com preço, disponibilidade e preço antigo. É o que permite ao Google mostrar **"R$ 15,00 · Em estoque"** direto no resultado da busca.
+
+### Sitemap
+
+O `public/sitemap.xml` inclui as páginas fixas **e cada página de produto**, que são as que realmente trazem visita de busca. Regenere quando o catálogo mudar bastante:
+
+```bash
+npm run sitemap
+```
+
+Ele lê o catálogo pela API REST do Firebase (produtos são de leitura pública, não precisa de credencial) e ignora os pausados. Se a rede falhar, gera só com as páginas fixas em vez de quebrar.
+
+### Endereço canônico
+
+O `useSeo` define o `canonical` de cada página **sem os parâmetros de busca**. Sem isso, `/?categoria=Maquiagem` e `/?busca=batom` contariam como páginas diferentes com o mesmo conteúdo, e o Google dividiria a relevância entre elas.
 
 ## Fotos do produto (até 3)
 
@@ -297,6 +482,110 @@ A loja **não quebra**. Se a função não existir (rodando local com `npm run d
 
 Produtos sem medidas cadastradas usam a embalagem padrão (0,3 kg e 16×11×6 cm), pensada para cosméticos. Isso evita que a cotação falhe, mas **cotação fiel exige medidas reais** — na lista de produtos do admin, os itens sem medidas aparecem com o selo `📦 sem medidas`. As dimensões enviadas são sempre elevadas ao mínimo aceito pelos Correios (16×11×2 cm), senão a requisição é recusada.
 
+## Pagamento online (Mercado Pago)
+
+Ao finalizar a compra, o pedido é salvo no Firebase e o cliente é levado ao checkout do Mercado Pago, onde paga por **Pix, cartão ou boleto**. Quando o pagamento é aprovado, o pedido vira **"pago"** sozinho e o estoque é baixado.
+
+### Como funciona por dentro
+
+```
+Cliente finaliza  →  pedido salvo (pending)  →  checkout do Mercado Pago
+                                                        ↓
+              pedido vira "paid"  ←  webhook confirma  ←  cliente paga
+              estoque baixado
+```
+
+Três funções de servidor, em `netlify/functions/`:
+
+| Função | Papel |
+|---|---|
+| `mp-create-preference` | Cria a cobrança e devolve o link do checkout |
+| `mp-webhook` | Recebe o aviso do Mercado Pago e confirma o pagamento |
+| `mp-status` | Diagnóstico: mostra se está tudo configurado |
+
+### ⚠️ Por que a volta do cliente NÃO confirma o pagamento
+
+Quando o cliente paga, o Mercado Pago o traz de volta para `/meus-pedidos?pagamento=sucesso`. **Esse endereço é só um aviso na tela.** Ele não marca nada como pago, por dois motivos:
+
+1. **Qualquer pessoa pode digitá-lo** no navegador. Se ele confirmasse pagamentos, bastaria colar a URL para ganhar produtos.
+2. **A volta pode não acontecer.** O cliente fecha a aba, a internet cai, o Pix é pago horas depois pelo aplicativo do banco. O pedido tem que ser confirmado mesmo assim.
+
+Quem confirma é o **webhook** — um aviso que o Mercado Pago envia ao servidor, independente do navegador do cliente.
+
+### As duas travas do webhook
+
+**Assinatura conferida.** Cada aviso vem com um cabeçalho `x-signature` calculado com a sua chave secreta. Se não bater, o aviso é recusado. Sem essa trava, qualquer um poderia chamar o endereço dizendo "o pedido X foi pago".
+
+**O conteúdo do aviso é ignorado.** Mesmo com assinatura válida, não acreditamos no que o aviso diz. A função consulta o pagamento **direto na API do Mercado Pago** e decide pela resposta de lá. O aviso serve só para dizer "olhe o pagamento tal".
+
+Além disso, o **valor é conferido**: se o pago for menor que o total do pedido, ele não vira "pago" — fica registrado um alerta para você revisar.
+
+### Configuração
+
+**1. Pegue as credenciais.** Mercado Pago → Suas integrações → sua aplicação → Credenciais.
+
+**2. Configure o webhook.** Na mesma tela, em Webhooks, cadastre:
+```
+https://silbeauty.netlify.app/api/mp-webhook
+```
+Marque o evento **Pagamentos**. O Mercado Pago vai gerar uma **assinatura secreta** — copie.
+
+**3. Pegue o segredo do Firebase.** Console → Configurações do projeto → Contas de serviço → Segredos do banco de dados.
+
+> ⚠️ Esse segredo **ignora todas as regras do banco**. Ele existe porque o webhook precisa marcar o pedido como pago, e uma função de servidor não tem sessão de login. Nunca o coloque em variável com prefixo `VITE_`.
+
+**4. Cadastre as três variáveis** no Netlify (Site settings → Environment variables) e no `.env` local:
+
+```
+MP_ACCESS_TOKEN=APP_USR-...
+MP_WEBHOOK_SECRET=...
+FIREBASE_DB_SECRET=...
+```
+
+**5. Reimplante.** Variável nova não entra em deploy que já existe.
+
+### Conferindo se ficou tudo certo
+
+```
+https://silbeauty.netlify.app/api/mp-status
+```
+
+O que você quer ver:
+
+```json
+{
+  "configured": true,
+  "environment": "produção",
+  "tokenValid": true,
+  "webhookSecretSet": true,
+  "firebaseSecretSet": true,
+  "ready": true
+}
+```
+
+**`ready: false`** significa que o pagamento até acontece, mas o pedido **nunca é marcado como pago** — que é pior do que não funcionar, porque a venda entra sem você perceber.
+
+### Testando antes de valer dinheiro
+
+Use as credenciais de **teste** (o Access Token começa com `TEST-`). O código detecta pelo prefixo e usa o checkout de sandbox sozinho — não há variável separada para esquecer de trocar.
+
+Crie um comprador de teste no painel do Mercado Pago e use os cartões de teste da documentação deles. Faça um pedido de ponta a ponta e confira:
+
+1. O checkout abriu com o valor correto, incluindo frete
+2. Depois de pagar, o pedido virou **"pago"** em `/admin` — pode levar alguns segundos
+3. O **estoque baixou** na quantidade certa
+4. Pagando de novo o mesmo pedido, o estoque **não baixa duas vezes**
+
+O item 4 importa: o Mercado Pago reenvia o mesmo aviso várias vezes, e o código só age na transição de `pending` para `paid`.
+
+### Limitações conhecidas
+
+**A baixa de estoque não é transacional.** A API REST do Firebase não tem transação, então é um ler-calcular-gravar. Dois pagamentos aprovados no mesmo instante para o último item poderiam se atropelar. No volume de uma loja pequena o risco é baixo, e o painel mostra o estoque real.
+
+**O total não é recalculado pelo servidor.** A função confere se o valor pago cobre o total do pedido, mas o total foi calculado pelo navegador. A defesa contra preço adulterado está nas regras do Firebase, que conferem o preço de cada item contra o catálogo.
+
+**Estorno não reverte o estoque.** Se você estornar um pagamento, o pedido recebe o novo status mas o estoque não volta sozinho — ajuste no painel.
+
 ## Medição (analytics)
 
 A loja mede de duas formas independentes.
@@ -349,14 +638,23 @@ Isso existe porque o WhatsApp não permite enviar mensagens de forma automática
    https://api.telegram.org/bot<SEU_TOKEN>/getUpdates
    ```
    (troque `<SEU_TOKEN>` pelo token do passo 1). Vai aparecer um JSON com `"chat":{"id": 123456789, ...}` — esse número é o seu **chat ID**.
-3. **Configure no projeto**: abra `src/config.js` e preencha:
-   ```js
-   export const TELEGRAM_BOT_TOKEN = "123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ";
-   export const TELEGRAM_CHAT_ID = "123456789";
+3. **Configure como variável de ambiente.** Localmente, no arquivo `.env`:
    ```
-4. Pronto — a partir do próximo pedido finalizado, a mensagem chega automaticamente no seu Telegram.
+   TELEGRAM_BOT_TOKEN=123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ
+   TELEGRAM_CHAT_ID=123456789
+   ```
+   Em produção, as mesmas duas em **Netlify → Site settings → Environment variables** (variável nova não entra em deploy existente — reimplante depois).
+4. Pronto — a partir do próximo pedido finalizado, a mensagem chega no seu Telegram.
 
-⚠️ Enquanto esses valores não forem preenchidos (ficarem como `"COLOQUE_..."`), o site continua funcionando normalmente (o pedido é salvo no Firebase de qualquer forma), só a notificação do Telegram não é enviada — vai aparecer um aviso no console do navegador lembrando disso.
+### ⚠️ Por que o token NÃO fica em `src/config.js`
+
+Ele ficava, e era um problema: aquele arquivo vai inteiro para o JavaScript que o visitante baixa. **Qualquer pessoa conseguia ler o token** e usar o seu bot para mandar mensagens, ler conversas ou desligá-lo.
+
+Mover para o `.env` com prefixo `VITE_` **não resolveria**: o Vite embute o valor no arquivo final do mesmo jeito. A única forma é o envio acontecer no servidor — por isso existe `netlify/functions/notify-order.mjs`. O site só chama `/api/notify-order` com o texto; quem conhece o token é o servidor.
+
+Se o seu token já esteve dentro do código publicado, **gere um novo** com `/revoke` no BotFather.
+
+⚠️ Enquanto as variáveis não forem preenchidas, o site funciona normalmente — o pedido é salvo no Firebase de qualquer forma e aparece no painel. Só o aviso não é enviado, com um registro no console. Uma falha no Telegram **nunca** derruba o fechamento da compra.
 
 ## Favoritos
 
@@ -373,21 +671,22 @@ O site agora é um PWA completo (via `vite-plugin-pwa`):
 - **Funciona offline (parcialmente)**: um Service Worker (gerado automaticamente no build) faz cache dos arquivos do app (HTML, CSS, JS, ícones) e das imagens de produtos, então depois da primeira visita o site abre rápido e continua navegável mesmo com internet instável. Os dados do Firebase (lista de produtos) precisam de conexão para atualizar em tempo real.
 - O Service Worker só é gerado no **build de produção** (`npm run build` / Netlify). No `npm run dev` ele não é ativado, para não interferir no desenvolvimento.
 
-## SEO
+## Páginas de conteúdo
 
-O projeto já inclui o básico de SEO:
-- Meta tags de descrição, palavras-chave, Open Graph e Twitter Card no `index.html`
-- Dados estruturados (JSON-LD) informando que o site é uma loja online
-- Título e descrição dinâmicos por página (via `src/hooks/useSeo.js`), inclusive por produto
-- `public/robots.txt` e `public/sitemap.xml`
-- Páginas de conteúdo: **Sobre** (`/sobre`), **FAQ** (`/faq`), **Política de Privacidade** (`/politica-de-privacidade`) e **Termos de Uso** (`/termos-de-uso`), linkadas no rodapé e no menu
+Além da loja, existem **Dicas de Beleza** (`/dicas-de-beleza`), **Sobre** (`/sobre`), **FAQ** (`/faq`), **Política de Privacidade** (`/politica-de-privacidade`) e **Termos de Uso** (`/termos-de-uso`), linkadas no rodapé e no menu.
 
-⚠️ **Importante**: os arquivos `index.html`, `robots.txt` e `sitemap.xml` usam a URL de exemplo `https://silbeauty.netlify.app/`. Depois que você publicar e souber o endereço final do site (o domínio que o Netlify gerar, ou um domínio próprio), troque essa URL nesses três arquivos para o SEO funcionar corretamente.
+⚠️ **Se você trocar de domínio**, o endereço `https://silbeauty.netlify.app/` aparece em quatro lugares e precisa ser atualizado em todos: `index.html`, `public/robots.txt`, `scripts/generate-sitemap.mjs` e `scripts/generate-og-image.mjs`. Esquecer um deles quebra o SEO em silêncio.
 
-## Sobre as imagens
+## Sobre as imagens dos produtos
 
-No painel Admin você pode:
-- Colar um **link (URL)** de uma imagem já hospedada em algum lugar; ou
-- Fazer **upload de um arquivo** do computador — a imagem é convertida em base64 e salva direto no Realtime Database.
+No painel você pode colar um **link** de imagem já hospedada, ou **enviar um arquivo** — que é reduzido para 800px e salvo em base64 dentro do Realtime Database.
 
-Upload de arquivo é prático, mas gera registros maiores no banco. Para uma loja com muitas fotos em alta resolução, o ideal futuramente é usar o Firebase Storage.
+⚠️ **Prefira o link sempre que possível.** A vitrine lê o nó `products` inteiro, então cada foto enviada por upload (~150 KB em base64) é baixada por **todo visitante**, mesmo dos produtos que ele não abrir. Com 20 produtos isso passa de 3 MB só para exibir a página inicial.
+
+A solução definitiva é hospedar as fotos fora do banco (Firebase Storage, Cloudinary) e guardar só a URL — o produto sairia de ~150 KB para ~100 bytes, e as imagens ganhariam cache e CDN. Ainda não está implementado.
+
+---
+
+<div align="center">
+<sub>Feito com carinho para a <strong>SilBeauty</strong> 💗</sub>
+</div>

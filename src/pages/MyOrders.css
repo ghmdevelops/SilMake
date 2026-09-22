@@ -257,3 +257,33 @@
     gap: 4px;
   }
 }
+
+/* Aviso de retorno do checkout do Mercado Pago. É informativo: a confirmação
+   real vem do webhook, que pode chegar alguns segundos depois. */
+.payment-return {
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.payment-sucesso {
+  border-color: #b7e4c7;
+  background: #eefaf2;
+  color: #15633f;
+}
+
+.payment-pendente {
+  border-color: #ffe0a3;
+  background: #fff8e8;
+  color: #8a5a00;
+}
+
+.payment-falhou {
+  border-color: #f5c2c2;
+  background: #fdeeee;
+  color: #9b1c1c;
+}

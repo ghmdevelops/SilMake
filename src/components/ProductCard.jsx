@@ -6,6 +6,7 @@ import { isOutOfStock, isLowStock } from "../utils/stock";
 import { getDiscount } from "../utils/pricing";
 import { trackAddToCart } from "../api/stats";
 import { Heart } from "./icons";
+import ShareProduct from "./ShareProduct";
 import "./ProductCard.css";
 
 function formatPrice(value) {
@@ -59,14 +60,18 @@ export default function ProductCard({ product }) {
           <span className="product-card-discount">-{discount.percent}%</span>
         )}
 
-        <button
-          className={`favorite-btn ${favorite ? "active" : ""}`}
-          onClick={handleToggleFavorite}
-          aria-label={favorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-          aria-pressed={favorite}
-        >
-          <Heart size={17} filled={favorite} />
-        </button>
+        <div className="product-card-tools">
+          <button
+            className={`favorite-btn ${favorite ? "active" : ""}`}
+            onClick={handleToggleFavorite}
+            aria-label={favorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+            aria-pressed={favorite}
+          >
+            <Heart size={17} filled={favorite} />
+          </button>
+
+          <ShareProduct product={product} compact />
+        </div>
       </div>
 
       <div className="product-card-body">

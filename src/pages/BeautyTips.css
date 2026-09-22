@@ -1,0 +1,242 @@
+/* Complementa StaticPage.css — aqui só o que é específico das dicas. */
+
+.tips-page {
+  /* Os atalhos usam âncoras; sem isto o título pararia colado no topo,
+     escondido atrás da barra fixa. */
+  scroll-behavior: smooth;
+}
+
+/* ---------------------------------------------------------------------------
+   Atalhos de seção
+   --------------------------------------------------------------------------- */
+
+.tips-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 34px;
+}
+
+.tips-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.tips-nav-link:hover {
+  border-color: var(--accent-1);
+  color: var(--accent-1);
+  text-decoration: none;
+}
+
+/* Acompanha a leitura: o atalho da seção visível fica preenchido, para você
+   saber onde está numa página longa. */
+.tips-nav-link.active {
+  background: var(--accent-1);
+  border-color: var(--accent-1);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+   Seções
+   --------------------------------------------------------------------------- */
+
+.tips-section {
+  margin-bottom: 46px;
+  scroll-margin-top: 90px;
+}
+
+.tips-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tips-section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(236, 111, 155, 0.12);
+  color: var(--accent-1);
+}
+
+.tips-intro {
+  color: var(--text-muted);
+  margin-top: -2px;
+}
+
+/* ---------------------------------------------------------------------------
+   Cards
+   --------------------------------------------------------------------------- */
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 18px 0 20px;
+}
+
+.tip-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+/* Faixa rosa que corre no topo do card ao passar o mouse. Começa com
+   escala 0 na esquerda e se estica — mais elegante que trocar a cor da
+   borda inteira de uma vez. */
+.tip-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-1);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.tip-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+.tip-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* Número grande e apagado no canto: dá ritmo visual à lista sem competir
+   com o texto. */
+.tip-number {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-family: var(--font-heading);
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent-1);
+  opacity: 0.12;
+  transition: opacity 0.25s ease;
+}
+
+.tip-card:hover .tip-number {
+  opacity: 0.28;
+}
+
+.tip-card h3 {
+  font-family: var(--font-heading);
+  font-size: 0.98rem;
+  color: var(--text-strong);
+  margin-bottom: 6px;
+  /* Espaço para o número não encostar no título. */
+  padding-right: 34px;
+}
+
+.tip-card p {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Entrada dos cards conforme a rolagem
+   --------------------------------------------------------------------------- */
+
+/* A classe "reveal" só é aplicada pelo JavaScript quando existe suporte e o
+   movimento é permitido. Sem ela o card já nasce visível — então uma falha
+   nunca deixa conteúdo invisível. */
+.tip-card.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.5s ease var(--reveal-delay, 0ms),
+    transform 0.5s ease var(--reveal-delay, 0ms),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.tip-card.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Depois de revelado, o hover volta a mandar no transform — sem isto o
+   atraso da entrada se aplicaria também ao levantar do card. */
+.tip-card.reveal.is-visible:hover {
+  transform: translateY(-4px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+/* ---------------------------------------------------------------------------
+   Chamada para a vitrine
+   --------------------------------------------------------------------------- */
+
+.tips-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.87rem;
+  font-weight: 600;
+  color: var(--accent-1);
+  text-decoration: none;
+}
+
+.tips-cta:hover {
+  text-decoration: underline;
+}
+
+.tips-cta-arrow {
+  transition: transform 0.2s ease;
+}
+
+.tips-cta:hover .tips-cta-arrow {
+  transform: translateX(4px);
+}
+
+.tips-disclaimer {
+  margin-top: 40px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem !important;
+  color: var(--text-dim) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Acessibilidade
+   --------------------------------------------------------------------------- */
+
+/* Quem pediu menos movimento não recebe nem a rolagem suave nem os
+   deslocamentos. O hook já evita aplicar a classe de entrada, e aqui
+   garantimos o resto. */
+@media (prefers-reduced-motion: reduce) {
+  .tips-page {
+    scroll-behavior: auto;
+  }
+  .tip-card:hover {
+    transform: none;
+  }
+  .tips-cta:hover .tips-cta-arrow {
+    transform: none;
+  }
+}

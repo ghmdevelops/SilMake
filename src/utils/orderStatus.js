@@ -15,6 +15,19 @@ export const ORDER_STATUS_LABELS = {
   closed: "Encerrado",
 };
 
+// Status em que as unidades do pedido estão FORA do estoque.
+//
+// A baixa acontece quando você confirma o pagamento, não quando o cliente
+// finaliza o pedido. O motivo é de segurança: para o navegador do cliente
+// dar baixa, a regra do Firebase precisava liberar escrita no estoque para
+// qualquer pessoa logada — e isso permitia zerar o estoque da loja inteira
+// criando uma conta.
+export const STOCK_HELD_STATUSES = ["paid", "shipped", "completed"];
+
+export function holdsStock(status) {
+  return STOCK_HELD_STATUSES.includes(status);
+}
+
 // Normaliza o status salvo no pedido, com compatibilidade para pedidos
 // antigos que ainda usam os campos booleanos "paid"/"closed" em vez do
 // campo único "status".

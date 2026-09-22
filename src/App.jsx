@@ -14,6 +14,7 @@ import BackToTop from "./components/BackToTop";
 import CookieConsent from "./components/CookieConsent";
 import InstallPwaPrompt from "./components/InstallPwaPrompt";
 import PageLoader from "./components/PageLoader";
+import SplashScreen from "./components/SplashScreen";
 import Home from "./pages/Home";
 
 // Rotas secundárias carregadas sob demanda (code-splitting), para deixar
@@ -24,6 +25,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const AdminOrderDetail = lazy(() => import("./pages/AdminOrderDetail"));
 const AdminOrdersPage = lazy(() => import("./pages/AdminOrdersPage"));
 const Faq = lazy(() => import("./pages/Faq"));
+const BeautyTips = lazy(() => import("./pages/BeautyTips"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const About = lazy(() => import("./pages/About"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -59,6 +61,9 @@ export default function App() {
           <CartProvider>
             <WishlistProvider>
               <ScrollToTop />
+              {/* Fora do app-shell: cobre a tela inteira enquanto o catálogo
+                  carrega, e se remove sozinho depois. */}
+              <SplashScreen />
               <div className="app-shell">
                 <Navbar />
                 <TrustBar />
@@ -78,6 +83,7 @@ export default function App() {
                         <Route path="/favoritos" element={<Favorites />} />
                         <Route path="/sobre" element={<About />} />
                         <Route path="/faq" element={<Faq />} />
+                        <Route path="/dicas-de-beleza" element={<BeautyTips />} />
                         <Route
                           path="/politica-de-privacidade"
                           element={<PrivacyPolicy />}
