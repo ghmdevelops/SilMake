@@ -1,28 +1,34 @@
+import { Sparkles } from "./icons";
 import "./StoreHero.css";
 
-// Banner de marca no topo da home. Ele aparece quando NÃO há promoção ativa:
-// o espaço nobre da página nunca fica vazio, e o visitante que chega pela
-// primeira vez entende de cara o que a loja é. Quando você marca um produto
-// como "Promoção da semana" no admin, o carrossel assume esse lugar.
+// Bloco de identidade no topo da home. Aparece SEMPRE.
+//
+// Antes ele só entrava quando o catálogo estava vazio, o que na prática
+// significava nunca. O efeito era uma loja que abria direto nos produtos, sem
+// dizer o que é — grandes marcas podem fazer isso porque já são conhecidas;
+// uma loja nova, que recebe visita do Instagram, não.
+//
+// É deliberadamente compacto: diz quem somos sem empurrar o produto para
+// fora da primeira tela. O carrossel logo abaixo continua sendo o destaque
+// visual.
 export default function StoreHero() {
   return (
     <section className="store-hero">
-      <div className="store-hero-content">
-        <span className="store-hero-badge">✨ Bem-vinda à SilBeauty</span>
-        <h1>
-          Beleza que <span>combina com você</span>
-        </h1>
-        <p>Produtos escolhidos com carinho para o seu dia a dia.</p>
-        <a href="#produtos" className="btn btn-primary">
-          Ver produtos
-        </a>
-      </div>
+      <span className="store-hero-badge">
+        <Sparkles size={14} />
+        Loja oficial
+      </span>
 
-      <div className="store-hero-decoration" aria-hidden="true">
-        <span>💄</span>
-        <span>🌸</span>
-        <span>✨</span>
-      </div>
+      {/* Único h1 da página: descreve a loja para quem lê e para os
+          buscadores. */}
+      <h1>
+        Beleza que <span>combina com você</span>
+      </h1>
+
+      <p>
+        Maquiagem, skincare e perfumaria escolhidos com carinho. Enviamos para todo o
+        Brasil, com frete grátis e acompanhamento do pedido pelo site.
+      </p>
     </section>
   );
 }

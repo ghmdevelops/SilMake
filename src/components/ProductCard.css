@@ -263,3 +263,25 @@
     font-size: 1rem;
   }
 }
+
+/* Produto oculto, visível apenas para a conta admin (veja useProducts).
+   A borda tracejada e a faixa deixam claro que este card NÃO está publicado —
+   sem isso é fácil olhar a vitrine e achar que está tudo no ar. */
+.product-card.is-hidden-preview {
+  border-style: dashed;
+  border-color: var(--accent-1);
+}
+
+.product-card-hidden-flag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 8px;
+  background: var(--accent-1);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+}

@@ -124,22 +124,19 @@ export default function Home() {
 
   return (
     <div className="home">
-      {/* Título para buscadores e leitores de tela — o texto visível da
-          identidade fica no banner/carrossel. */}
-      <h1 className="sr-only">SilBeauty — maquiagem, cuidados e perfumaria</h1>
+      {/* Identidade da loja, sempre no topo. Ela traz o h1 da página — por
+          isso não existe outro título aqui. Antes este bloco só aparecia com
+          o catálogo vazio, e a loja abria sem dizer o que era. */}
+      <StoreHero />
 
-      {/* O carrossel (que passa sozinho) fica sempre no topo enquanto houver
-          produtos. O banner da loja só entra quando o catálogo está vazio. */}
-      {!loading &&
-        (carouselProducts.length > 0 ? (
-          <PromoCarousel
-            products={carouselProducts}
-            title={isPromo ? "Promoção da semana" : "Destaques da loja"}
-            promo={isPromo}
-          />
-        ) : (
-          <StoreHero />
-        ))}
+      {/* Destaque visual, logo abaixo da identidade. */}
+      {!loading && carouselProducts.length > 0 && (
+        <PromoCarousel
+          products={carouselProducts}
+          title={isPromo ? "Promoção da semana" : "Destaques da loja"}
+          promo={isPromo}
+        />
+      )}
 
       {/* Logo abaixo das promoções: quem olhou os destaques e não se decidiu
           encontra um motivo para ficar no site em vez de sair. */}
@@ -227,11 +224,23 @@ export default function Home() {
         </div>
       </div>
 
-      {!loading && (
-        <p className="results-count">
-          {filtered.length} produto{filtered.length !== 1 ? "s" : ""} encontrado
-          {filtered.length !== 1 ? "s" : ""}
-        </p>
+      {/* Título da seção. Antes havia só "N produtos encontrados" solto, e o
+          grid começava sem nome — o que faz a página parecer inacabada.
+          O texto muda conforme o contexto: busca, categoria ou vitrine
+          inteira. */}
+      {!loading && filtered.length > 0 && (
+        <div className="grid-heading">
+          <h2>
+            {search.trim()
+              ? `Resultados para "${search.trim()}"`
+              : category !== "Todos"
+                ? category
+                : "Todos os produtos"}
+          </h2>
+          <span>
+            {filtered.length} {filtered.length === 1 ? "item" : "itens"}
+          </span>
+        </div>
       )}
 
       {loading && <ProductSkeleton />}

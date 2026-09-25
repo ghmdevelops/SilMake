@@ -14,28 +14,69 @@ function productUrl(productId) {
 //
 // `compact` é a versão do card da vitrine (só o ícone); sem ele vem o botão
 // com texto, usado na página do produto.
+// Largura do menu, usada para mantê-lo dentro da tela.
+const MENU_WIDTH = 200;
+
 export default function ShareProduct({ product, compact = false }) {
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
+  // Posição calculada a partir do botão. Necessária porque o menu é
+  // renderizado no <body>, fora da árvore do card.
+  const [menuPos, setMenuPos] = useState(null);
   const buttonRef = useRef(null);
+  const menuRef = useRef(null);
+
+  // O menu vive num portal no <body>, e não dentro do card.
+  //
+  // Motivo: o card tem overflow:hidden para arredondar a foto, o que recorta
+  // qualquer coisa que passe das suas bordas. Dentro do card, o menu aparecia
+  // cortado no celular — sem os ícones e sem a última opção.
+  function abrirMenu() {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const margem = 8;
+    // Alinha pela direita do botão, mas nunca deixa sair da tela.
+    const left = Math.min(
+      Math.max(margem, rect.right - MENU_WIDTH),
+      window.innerWidth - MENU_WIDTH - margem
+    );
+
+    setMenuPos({ top: rect.bottom + 8, left });
+    setOpen(true);
+  }
 
   // Fecha ao clicar fora ou apertar Esc — comportamento esperado de menu.
   useEffect(() => {
     if (!open) return undefined;
 
     function handlePointer(e) {
-      if (!buttonRef.current?.contains(e.target)) setOpen(false);
+      // Precisa checar o menu também: ele não está mais dentro do botão na
+      // árvore do DOM, então contains() do botão não o cobre mais.
+      if (buttonRef.current?.contains(e.target)) return;
+      if (menuRef.current?.contains(e.target)) return;
+      setOpen(false);
     }
     function handleKey(e) {
       if (e.key === "Escape") setOpen(false);
     }
 
+    // Rolar com o menu aberto o deixaria deslocado do botão, já que a
+    // posição é fixa na tela.
+    function handleScroll() {
+      setOpen(false);
+    }
+
     document.addEventListener("mousedown", handlePointer);
     window.addEventListener("keydown", handleKey);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
     return () => {
       document.removeEventListener("mousedown", handlePointer);
       window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
     };
   }, [open]);
 
@@ -103,7 +144,7 @@ export default function ShareProduct({ product, compact = false }) {
       <button
         type="button"
         className={compact ? "share-trigger-compact" : "btn btn-ghost share-trigger"}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => (open ? setOpen(false) : abrirMenu())}
         aria-label="Compartilhar produto"
         aria-expanded={open}
         disabled={generating}
@@ -112,24 +153,32 @@ export default function ShareProduct({ product, compact = false }) {
         {!compact && <span>{generating ? "Gerando..." : "Compartilhar"}</span>}
       </button>
 
-      {open && (
-        <div className="share-menu" role="menu">
-          <button type="button" role="menuitem" onClick={handleCopy}>
-            <LinkIcon size={16} /> Copiar link
-          </button>
-
-          {/* Só aparece onde existe: no computador, quase nunca. */}
-          {typeof navigator !== "undefined" && navigator.share && (
-            <button type="button" role="menuitem" onClick={handleNativeShare}>
-              <Share size={16} /> Enviar link
+      {open &&
+        menuPos &&
+        createPortal(
+          <div
+            className="share-menu"
+            role="menu"
+            ref={menuRef}
+            style={{ top: menuPos.top, left: menuPos.left, width: MENU_WIDTH }}
+          >
+            <button type="button" role="menuitem" onClick={handleCopy}>
+              <LinkIcon size={16} /> Copiar link
             </button>
-          )}
 
-          <button type="button" role="menuitem" onClick={handleStory}>
-            <Instagram size={16} /> Arte para Stories
-          </button>
-        </div>
-      )}
+            {/* Só aparece onde existe: no computador, quase nunca. */}
+            {typeof navigator !== "undefined" && navigator.share && (
+              <button type="button" role="menuitem" onClick={handleNativeShare}>
+                <Share size={16} /> Enviar link
+              </button>
+            )}
+
+            <button type="button" role="menuitem" onClick={handleStory}>
+              <Instagram size={16} /> Arte para Stories
+            </button>
+          </div>,
+          document.body
+        )}
 
       {/* Aviso de progresso: gerar a arte leva um instante, e sem retorno
           visual parece que o clique não funcionou. */}

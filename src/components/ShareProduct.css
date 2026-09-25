@@ -30,12 +30,12 @@
   background: #fff;
 }
 
+/* Posição fixa e no <body>: o card tem overflow:hidden para arredondar a
+   foto, e recortava este menu. As coordenadas vêm do componente, calculadas
+   a partir do botão. */
 .share-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 30;
-  min-width: 190px;
+  position: fixed;
+  z-index: 9990;
   display: flex;
   flex-direction: column;
   padding: 6px;

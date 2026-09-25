@@ -1,41 +1,54 @@
+/* Bloco de identidade do topo.
+   Compacto de propósito: precisa dizer o que a loja é sem empurrar o produto
+   para fora da primeira tela. */
 .store-hero {
+  text-align: center;
+  padding: 26px 20px 30px;
+  margin-bottom: 8px;
   position: relative;
   overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 46px 40px;
-  margin-bottom: 28px;
-  box-shadow: var(--shadow-md);
 }
 
-.store-hero-content {
+/* Brilho suave atrás do texto, no lugar da caixa com borda que havia antes.
+   Sem moldura o bloco se integra à página em vez de parecer um banner. */
+.store-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(236, 111, 155, 0.16), transparent 55%),
+    radial-gradient(circle at 85% 90%, rgba(201, 163, 224, 0.16), transparent 55%);
+  pointer-events: none;
+}
+
+.store-hero > * {
   position: relative;
-  z-index: 1;
-  max-width: 520px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
 }
 
 .store-hero-badge {
   display: inline-flex;
   align-items: center;
-  background: rgba(236, 111, 155, 0.12);
-  color: var(--accent-1);
-  font-size: 0.76rem;
-  font-weight: 700;
+  gap: 6px;
   padding: 5px 12px;
   border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--accent-1);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .store-hero h1 {
+  margin: 14px 0 10px;
   font-family: var(--font-heading);
-  font-size: 2.4rem;
+  /* Escala com a tela: sem clamp, o título quebrava em três linhas no
+     celular e ocupava o dobro do espaço. */
+  font-size: clamp(1.75rem, 6vw, 2.6rem);
   line-height: 1.15;
+  letter-spacing: -0.02em;
   color: var(--text-strong);
-  margin: 0;
 }
 
 .store-hero h1 span {
@@ -43,48 +56,18 @@
 }
 
 .store-hero p {
+  max-width: 46ch;
+  margin: 0 auto;
   color: var(--text-muted);
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.6;
-  margin: 0;
 }
 
-.store-hero .btn {
-  margin-top: 6px;
-  text-decoration: none;
-}
-
-/* Emojis decorativos ao fundo, à direita */
-.store-hero-decoration {
-  position: absolute;
-  right: 34px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  gap: 14px;
-  font-size: 3.2rem;
-  opacity: 0.22;
-  pointer-events: none;
-}
-
-.store-hero-decoration span:nth-child(2) {
-  transform: translateY(-18px);
-}
-
-@media (max-width: 760px) {
+@media (max-width: 560px) {
   .store-hero {
-    padding: 34px 22px;
-    text-align: center;
+    padding: 18px 12px 22px;
   }
-  .store-hero-content {
-    max-width: none;
-    align-items: center;
-  }
-  .store-hero h1 {
-    font-size: 1.85rem;
-  }
-  /* No celular os emojis competiriam com o texto pelo espaço. */
-  .store-hero-decoration {
-    display: none;
+  .store-hero p {
+    font-size: 0.88rem;
   }
 }

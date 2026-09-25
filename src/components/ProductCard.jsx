@@ -5,7 +5,7 @@ import { useWishlist } from "../context/WishlistContext";
 import { isOutOfStock, isLowStock } from "../utils/stock";
 import { getDiscount } from "../utils/pricing";
 import { trackAddToCart } from "../api/stats";
-import { Heart } from "./icons";
+import { Heart, EyeOff } from "./icons";
 import ShareProduct from "./ShareProduct";
 import "./ProductCard.css";
 
@@ -41,7 +41,18 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <div className={`product-card ${outOfStock ? "out-of-stock" : ""}`}>
+    <div
+      className={`product-card ${outOfStock ? "out-of-stock" : ""} ${product.hidden ? "is-hidden-preview" : ""}`}
+    >
+      {/* Produto oculto só chega até aqui quando a conta admin está logada
+          (veja useProducts). A faixa evita o erro de achar que ele está
+          publicado — e de esperar vendas de algo que ninguém vê. */}
+      {product.hidden && (
+        <span className="product-card-hidden-flag">
+          <EyeOff size={13} /> Oculto — só você vê
+        </span>
+      )}
+
       <div className="product-card-image-wrap">
         <Link to={`/produto/${product.id}`} className="product-card-image-link">
           {product.image ? (

@@ -100,12 +100,6 @@
   font-weight: 600;
 }
 
-.results-count {
-  color: var(--text-dim);
-  font-size: 0.85rem;
-  margin: 20px 0 16px;
-}
-
 /* O menu fica fixo no topo, então a âncora precisa de folga para o título
    da seção não ficar escondido atrás dele. */
 #produtos {
@@ -135,11 +129,39 @@
   display: flex;
 }
 
+/* Cabeçalho da seção de produtos. */
+.grid-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 26px 0 16px;
+}
+
+.grid-heading h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1.15rem, 3.5vw, 1.4rem);
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+}
+
+.grid-heading span {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 22px;
 }
+
+/* O auto-fill acima produz 4 colunas no desktop, e é o certo: o card foi
+   desenhado para essa largura. Com 3 colunas a foto fica grande demais e o
+   selo de desconto, o nome e o preço — que não escalam — parecem perdidos
+   dentro dela. Comparei os dois lado a lado antes de decidir. */
 
 @media (max-width: 560px) {
   .home {
