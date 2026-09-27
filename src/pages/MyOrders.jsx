@@ -7,7 +7,7 @@ import { useOrders } from "../hooks/useOrders";
 import { useSeo } from "../hooks/useSeo";
 import { startPayment, takePendingPurchase } from "../api/payment";
 import { trackEvent } from "../utils/analytics";
-import { paymentMethodLabel } from "../utils/payment";
+import { paymentMethodLabel, paymentStatusInfo } from "../utils/payment";
 import { getOrderStatus, ORDER_STATUS_LABELS } from "../utils/orderStatus";
 import "../components/ProductSkeleton.css";
 import "./MyOrders.css";
@@ -265,6 +265,21 @@ export default function MyOrders() {
                   <span>Pago com {paymentMethodLabel(order.paymentMethod)}</span>
                   <span>{formatDate(order.paidAt)}</span>
                 </div>
+              )}
+
+              {/* Sem isto, um Pix não pago e um cartão recusado aparecem
+                  igualmente como "pendente" — e a cliente não sabe se precisa
+                  fazer algo. */}
+              {!order.paidAt && paymentStatusInfo(order.paymentStatus) && (
+                <p
+                  className={`order-payment-status tom-${paymentStatusInfo(order.paymentStatus).tom}`}
+                >
+                  {paymentStatusInfo(order.paymentStatus).texto}
+                  {order.paymentStatus === "rejected" &&
+                    " — você pode tentar de novo pelo botão abaixo."}
+                  {order.paymentStatus === "pending" &&
+                    " — se você gerou um Pix ou boleto, o pedido é confirmado assim que compensar."}
+                </p>
               )}
 
               <div className="order-total">

@@ -9,6 +9,7 @@
 
 /api/mp-create-preference  /.netlify/functions/mp-create-preference  200!
 /api/mp-webhook            /.netlify/functions/mp-webhook            200!
+/api/mp-sync-order         /.netlify/functions/mp-sync-order         200!
 /api/mp-status             /.netlify/functions/mp-status             200!
 /api/notify-order          /.netlify/functions/notify-order          200!
 /api/shipping-quote        /.netlify/functions/shipping-quote        200!

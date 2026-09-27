@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { fetchOrderStatus } from "../api/orders";
-import { peekPendingPurchase, clearPendingPurchase } from "../api/payment";
+import { peekPendingPurchase, clearPendingPurchase, syncOrderPayment } from "../api/payment";
 import { trackEvent } from "../utils/analytics";
 
 // Limpa o carrinho quando um pagamento iniciado antes já foi confirmado.
@@ -33,10 +33,27 @@ export function usePaidOrderCleanup() {
 
     let cancelado = false;
 
-    fetchOrderStatus(currentUser.uid, pendente.orderId).then((status) => {
+    async function verificar() {
+      let status = await fetchOrderStatus(currentUser.uid, pendente.orderId);
+
+      // Ainda pendente no banco não significa não pago: o aviso do Mercado
+      // Pago pode não ter chegado. Antes de desistir, perguntamos direto na
+      // fonte — é o que evita um pedido pago ficar pendente para sempre.
+      if (status === "pending") {
+        const conferencia = await syncOrderPayment({
+          uid: currentUser.uid,
+          orderId: pendente.orderId,
+        });
+        if (conferencia?.resultado === "pago") status = "paid";
+      }
+
+      return status;
+    }
+
+    verificar().then((status) => {
       if (cancelado) return;
 
-      // Ainda pendente: o pagamento pode não ter sido feito, ou o Pix ainda
+      // Continua pendente de verdade: pode não ter sido pago, ou o Pix ainda
       // não compensou. Mantemos o registro e o carrinho como estão.
       if (!status || status === "pending") return;
 

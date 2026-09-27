@@ -303,3 +303,22 @@
   color: var(--text-dim);
   padding-top: 8px;
 }
+
+/* Situacao do pagamento quando o pedido ainda nao foi pago. */
+.order-payment-status {
+  margin: 10px 0 0;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.order-payment-status.tom-espera {
+  background: #fff8e8;
+  color: #8a5a00;
+}
+
+.order-payment-status.tom-ruim {
+  background: #fdeeee;
+  color: #9b1c1c;
+}

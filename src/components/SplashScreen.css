@@ -74,33 +74,21 @@
   gap: 14px;
 }
 
+/* O logo entra crescendo de leve, a partir de um tamanho ligeiramente menor.
+   width/height ficam no HTML para o navegador reservar o espaço e a tela não
+   dar um salto quando a imagem carrega. */
 .splash-logo {
-  display: flex;
-  font-family: var(--font-heading);
-  font-size: clamp(2rem, 10vw, 3rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--text-strong);
-}
-
-/* Cada letra sobe e aparece, uma após a outra. O atraso vem do índice
-   passado pelo componente. */
-.splash-logo span {
-  display: inline-block;
+  width: clamp(180px, 52vw, 260px);
+  height: auto;
   opacity: 0;
-  transform: translateY(14px);
-  animation: splash-letter 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
-  animation-delay: calc(var(--i) * 45ms);
+  transform: scale(0.92);
+  animation: splash-logo-in 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
 }
 
-.splash-logo .accent {
-  color: var(--accent-1);
-}
-
-@keyframes splash-letter {
+@keyframes splash-logo-in {
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
   }
 }
 
@@ -110,8 +98,8 @@
   text-transform: uppercase;
   color: var(--text-dim);
   opacity: 0;
-  /* Entra depois da última letra, para a leitura acontecer em ordem. */
-  animation: splash-fade 0.5s ease 0.42s forwards;
+  /* Entra depois do logo, para a leitura acontecer em ordem. */
+  animation: splash-fade 0.5s ease 0.45s forwards;
 }
 
 @keyframes splash-fade {
@@ -167,7 +155,7 @@
   .splash-blob {
     animation: none;
   }
-  .splash-logo span,
+  .splash-logo,
   .splash-tagline,
   .splash-bar {
     animation: none;

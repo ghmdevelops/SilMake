@@ -48,6 +48,13 @@
   status = 200
   force = true
 
+# Rede de segurança do webhook: a loja confere o pagamento por conta própria.
+[[redirects]]
+  from = "/api/mp-sync-order"
+  to = "/.netlify/functions/mp-sync-order"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/api/mp-status"
   to = "/.netlify/functions/mp-status"

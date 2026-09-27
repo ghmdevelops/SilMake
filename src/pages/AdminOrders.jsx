@@ -8,6 +8,7 @@ import { exportOrdersToCsv } from "../utils/exportCsv";
 import { syncStockForStatusChange } from "../utils/stockSync";
 import { getExpectedTotal, hasTotalMismatch } from "../utils/orderTotals";
 import { paymentMethodLabel } from "../utils/payment";
+import { syncOrderPayment } from "../api/payment";
 import "./AdminOrders.css";
 
 function formatPrice(value) {
@@ -62,6 +63,7 @@ export default function AdminOrders() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
+  const [checkingId, setCheckingId] = useState(null);
   const [trackingDrafts, setTrackingDrafts] = useState({});
   const [savingTrackingId, setSavingTrackingId] = useState(null);
   const [pinnedKey, setPinnedKey] = useState(null);
@@ -100,6 +102,35 @@ export default function AdminOrders() {
   });
 
   const pinnedOrder = orders.find((o) => orderKey(o) === pinnedKey) || null;
+
+  // Pergunta ao Mercado Pago se este pedido foi pago. Se foi, o servidor
+  // marca como pago, baixa o estoque e avisa no Telegram — o mesmo caminho do
+  // webhook, só que iniciado por você.
+  async function handleCheckPayment(order) {
+    setCheckingId(order.id);
+    const r = await syncOrderPayment({ uid: order.uid, orderId: order.id });
+    setCheckingId(null);
+
+    const mensagens = {
+      pago: { texto: "Pagamento confirmado! Estoque baixado.", tipo: "success" },
+      sem_pagamento: {
+        texto: "Nenhum pagamento encontrado para este pedido no Mercado Pago.",
+        tipo: "info",
+      },
+      valor_divergente: {
+        texto: "Há um pagamento, mas com valor menor que o do pedido. Veja o alerta no pedido.",
+        tipo: "error",
+      },
+      ja_processado: { texto: "Este pedido já estava resolvido.", tipo: "info" },
+      registrado: { texto: "Há um pagamento, mas ainda não aprovado.", tipo: "info" },
+    };
+
+    const m = mensagens[r?.resultado] || {
+      texto: "Não foi possível verificar agora. Tente novamente em instantes.",
+      tipo: "error",
+    };
+    showToast(m.texto, { type: m.tipo, duration: 5000 });
+  }
 
   async function handleStatusChange(order, status) {
     const previousStatus = getOrderStatus(order);
@@ -293,6 +324,19 @@ export default function AdminOrders() {
 
           <div className="order-row-actions">
             <span className={`status-badge status-${status}`}>{ORDER_STATUS_LABELS[status]}</span>
+
+            {/* Para o caso de a cliente avisar que pagou e o pedido ainda
+                constar pendente: pergunta direto ao Mercado Pago em vez de
+                você marcar na mão sem saber se entrou mesmo. */}
+            {status === "pending" && !order.manual && (
+              <button
+                className="btn btn-ghost"
+                onClick={() => handleCheckPayment(order)}
+                disabled={checkingId === order.id}
+              >
+                {checkingId === order.id ? "Verificando..." : "Verificar pagamento"}
+              </button>
+            )}
 
             <select
               className="input order-row-status-select"

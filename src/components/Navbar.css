@@ -20,6 +20,9 @@
 }
 
 .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-heading);
   /* Acompanha a largura da tela junto com os ícones */
   font-size: clamp(1.15rem, 4.5vw, 1.5rem);
@@ -31,11 +34,23 @@
   /* Pode encurtar se os ícones precisarem do espaço — eles são funcionais,
      a marca é reconhecida mesmo abreviada. */
   min-width: 0;
+}
+
+.navbar-brand img {
+  /* Altura amarrada ao tamanho da fonte: o símbolo cresce e encolhe junto
+     com o nome, em vez de descolar dele nas telas pequenas. */
+  height: 1.6em;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.navbar-brand-text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.navbar-brand span {
+.navbar-brand-text span {
   background: var(--accent-gradient);
   -webkit-background-clip: text;
   background-clip: text;

@@ -69,8 +69,15 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar-inner">
+        {/* Símbolo + nome em texto, em vez do logo inteiro como imagem: o
+            logo original é empilhado (desenho em cima, palavra embaixo) e
+            ficaria ilegível na altura de uma barra de menu. O texto também
+            acompanha o tamanho de fonte da tela. */}
         <Link to="/" className="navbar-brand">
-          Sil<span>Beauty</span>
+          <img src="/logo-simbolo.png" alt="" aria-hidden="true" width="133" height="167" />
+          <span className="navbar-brand-text">
+            Sil<span>Beauty</span>
+          </span>
         </Link>
 
         {/* Só aparece em telas maiores; no celular esses links ficam dentro do menu do avatar */}

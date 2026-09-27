@@ -1,112 +1,67 @@
 // Recebe o aviso do Mercado Pago quando um pagamento muda de situação.
 //
-// Esta é a única fonte de verdade sobre "o pedido foi pago". A volta do
-// cliente ao site NÃO serve para isso: ele pode fechar a aba antes, e o
-// endereço de retorno pode ser digitado por qualquer pessoa.
+// ---------------------------------------------------------------------------
+// De onde vem a segurança aqui
+// ---------------------------------------------------------------------------
 //
-// Duas travas de segurança aqui:
+// O conteúdo do aviso NUNCA é usado para decidir nada. Dele tiramos apenas um
+// número: "olhe o pagamento tal". Em seguida consultamos esse pagamento
+// direto na API do Mercado Pago, com o nosso Access Token, e só a resposta de
+// lá vale.
 //
-// 1. A assinatura do aviso é conferida (cabeçalho x-signature). Sem isso,
-//    qualquer um poderia chamar este endereço dizendo "o pedido X foi pago".
+// Isso é o que torna o fluxo seguro, e não a assinatura. Quem inventasse um
+// aviso só conseguiria nos fazer consultar um id: se o pagamento não for da
+// nossa conta, a API responde 404; se não apontar para um pedido nosso, paramos;
+// se o valor não cobrir o pedido, paramos. Marcar como pago só acontece se o
+// dinheiro entrou de verdade.
 //
-// 2. Mesmo com assinatura válida, o conteúdo do aviso NÃO é usado para
-//    decidir nada. Nós consultamos o pagamento direto na API do Mercado Pago
-//    e acreditamos apenas nessa resposta.
+// A assinatura continua sendo conferida, mas como VERIFICAÇÃO, não como
+// porteiro. A razão é concreta: um detalhe errado no formato do texto assinado
+// já derrubou toda a confirmação de pagamento desta loja, em silêncio —
+// pagamentos entravam e os pedidos ficavam pendentes. Um detalhe de formatação
+// não pode ter esse poder. Quando a assinatura não confere, registramos alto e
+// seguimos pela fonte confiável.
 
-import { createHmac, timingSafeEqual } from "node:crypto";
-import {
-  getConfig,
-  jsonResponse,
-  mpFetch,
-  readOrder,
-  patchOrder,
-  decrementStock,
-} from "./lib/mercadoPago.mjs";
-import {
-  sendTelegram,
-  nomeDoMeio,
-  formatarPreco,
-  formatarDataHora,
-} from "./lib/telegram.mjs";
+import { createHmac } from "node:crypto";
+import { getConfig, jsonResponse, mpFetch } from "./lib/mercadoPago.mjs";
+import { applyPaymentToOrder } from "./lib/applyPayment.mjs";
+import { sendTelegram } from "./lib/telegram.mjs";
 
 // Confere a assinatura conforme a documentação do Mercado Pago. O cabeçalho
-// vem como "ts=1704908010,v1=618c85345248dd820d5fd456117c2ab2ef8eda45a0282ff693eac24131a5e839".
-function signatureIsValid(request, dataId) {
+// vem como "ts=1704908010,v1=618c8534...".
+//
+// Detalhe que custa caro: o id usado no texto assinado é o que vem na QUERY
+// da URL (?data.id=...), em minúsculas — não o do corpo da requisição.
+function checarAssinatura(request, dataIdDoCorpo) {
   const { webhookSecret } = getConfig();
-
-  // Sem segredo configurado não há como validar. Recusamos em vez de
-  // confiar: um webhook aberto é um caminho para marcar pedidos como pagos.
-  if (!webhookSecret) return false;
+  if (!webhookSecret) return { ok: false, motivo: "sem_segredo" };
 
   const header = request.headers.get("x-signature") || "";
   const requestId = request.headers.get("x-request-id") || "";
 
   const parts = Object.fromEntries(
-    header.split(",").map((p) => p.split("=").map((s) => s.trim()))
+    header
+      .split(",")
+      .map((p) => p.split("=").map((s) => s.trim()))
+      .filter((p) => p.length === 2)
   );
-  const ts = parts.ts;
-  const v1 = parts.v1;
-  if (!ts || !v1) return false;
+  if (!parts.ts || !parts.v1) return { ok: false, motivo: "cabecalho_invalido" };
 
-  // O texto assinado tem formato fixo, definido pelo Mercado Pago.
-  const manifest = `id:${dataId};request-id:${requestId};ts:${ts};`;
-  const esperado = createHmac("sha256", webhookSecret).update(manifest).digest("hex");
-
-  const a = Buffer.from(esperado, "utf8");
-  const b = Buffer.from(v1, "utf8");
-  if (a.length !== b.length) return false;
-  // Comparação de tempo constante: evita descobrir a assinatura por tentativa.
-  return timingSafeEqual(a, b);
-}
-
-function formatarEndereco(address) {
-  if (!address || !address.street) return "";
-  const { street, number, complement, neighborhood, city, state, zipCode } = address;
-  return [
-    [street, number].filter(Boolean).join(", "),
-    complement,
-    [neighborhood, city, state].filter(Boolean).join(" - "),
-    zipCode,
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-// Mensagem do Telegram. Chega só quando o pagamento entrou, então ela traz
-// tudo o que você precisa para separar e despachar sem abrir o painel.
-function montarAviso(order, payment, problemasDeEstoque) {
-  const itens = (order.items || []).map(
-    (i) => `• ${i.name} (x${i.quantity}) — ${formatarPreco(i.price * i.quantity)}`
-  );
-
-  const linhas = [
-    `💰 PAGAMENTO CONFIRMADO — pedido #${order.orderNumber || ""}`,
-    "",
-    ...itens,
-    "",
-    `Subtotal: ${formatarPreco(order.subtotal)}`,
-    `Frete: ${order.shippingFee > 0 ? formatarPreco(order.shippingFee) : "Grátis"}`,
-    `Total pago: ${formatarPreco(payment.transaction_amount)}`,
-    "",
-    `Meio: ${nomeDoMeio(payment.payment_type_id)}`,
-    `Pago em: ${formatarDataHora(payment.date_approved) || "agora"}`,
-  ];
-
-  if (order.shippingService) linhas.push(`Envio: ${order.shippingService}`);
-
-  const endereco = formatarEndereco(order.address);
-  if (endereco) linhas.push("", "Endereço de entrega:", endereco);
-
-  linhas.push("", `Cliente: ${order.customerName || order.customerEmail || "—"}`);
-  if (order.customerEmail) linhas.push(`E-mail: ${order.customerEmail}`);
-
-  // Divergência de estoque precisa aparecer aqui: é o momento em que você
-  // ainda pode avisar a cliente antes de prometer o envio.
-  if (problemasDeEstoque.length > 0) {
-    linhas.push("", `⚠️ Conferir estoque: ${problemasDeEstoque.join(", ")}`);
+  let dataId = dataIdDoCorpo;
+  try {
+    const daQuery = new URL(request.url).searchParams.get("data.id");
+    if (daQuery) dataId = daQuery;
+  } catch {
+    // URL malformada: segue com o id do corpo.
   }
 
-  return linhas.join("\n");
+  const manifest = `id:${String(dataId).toLowerCase()};request-id:${requestId};ts:${parts.ts};`;
+  const esperado = createHmac("sha256", webhookSecret).update(manifest).digest("hex");
+
+  if (esperado !== parts.v1) {
+    return { ok: false, motivo: "nao_confere", manifest };
+  }
+  return { ok: true };
 }
 
 export default async function handler(request) {
@@ -117,6 +72,9 @@ export default async function handler(request) {
   const { configured, dbSecret } = getConfig();
   if (!configured || !dbSecret) {
     console.error("Webhook chamado sem MP_ACCESS_TOKEN ou FIREBASE_DB_SECRET.");
+    await sendTelegram(
+      "⚠️ SilBeauty: chegou um aviso de pagamento, mas o servidor está sem as credenciais configuradas. Nenhum pedido foi confirmado."
+    );
     return jsonResponse({ error: "not_configured" }, 503);
   }
 
@@ -127,7 +85,6 @@ export default async function handler(request) {
     return jsonResponse({ error: "invalid_json" }, 400);
   }
 
-  // Só nos interessam avisos de pagamento.
   const tipo = body?.type || body?.topic;
   if (tipo !== "payment") {
     return jsonResponse({ ignored: tipo || "sem tipo" });
@@ -138,82 +95,41 @@ export default async function handler(request) {
     return jsonResponse({ error: "missing_payment_id" }, 400);
   }
 
-  if (!signatureIsValid(request, paymentId)) {
-    console.error("Assinatura do webhook inválida. Aviso descartado.");
-    return jsonResponse({ error: "invalid_signature" }, 401);
+  // A assinatura é conferida e registrada, mas não interrompe o fluxo.
+  const assinatura = checarAssinatura(request, paymentId);
+  if (!assinatura.ok) {
+    console.error(
+      `Assinatura do webhook não confere (${assinatura.motivo}). ` +
+        `manifest="${assinatura.manifest || "-"}". ` +
+        "Seguindo pela consulta direta à API, que é a fonte confiável."
+    );
   }
 
-  // Consulta na fonte. O corpo do aviso não é usado para decidir.
+  // A fonte da verdade: consulta com o nosso token. Se o pagamento não for da
+  // nossa conta, a resposta é 404 e nada acontece.
   const { ok, status, data: payment } = await mpFetch(`/v1/payments/${paymentId}`);
   if (!ok) {
+    if (status === 404) {
+      // Id que não existe na nossa conta: provavelmente um aviso forjado.
+      console.error(`Pagamento ${paymentId} não pertence a esta conta. Ignorado.`);
+      return jsonResponse({ ignored: "payment_not_found" });
+    }
     console.error("Não foi possível consultar o pagamento:", status, payment);
     // 500 faz o Mercado Pago tentar de novo mais tarde, que é o desejado.
     return jsonResponse({ error: "payment_read_failed" }, 500);
   }
 
-  const referencia = String(payment.external_reference || "");
-  const [uid, orderId] = referencia.split("|");
-  if (!uid || !orderId) {
-    console.error("Pagamento sem referência de pedido:", referencia);
-    return jsonResponse({ error: "missing_reference" }, 400);
+  const { resultado, status: statusPedido } = await applyPaymentToOrder(payment, {
+    origem: assinatura.ok ? "webhook" : "webhook (assinatura não confere)",
+  });
+
+  // Avisa quando o pagamento entrou mas a assinatura falhou: está funcionando,
+  // porém há algo para corrigir na configuração.
+  if (!assinatura.ok && resultado === "pago") {
+    await sendTelegram(
+      "ℹ️ O pedido acima foi confirmado pela conferência direta. A assinatura do webhook não bateu — vale revisar MP_WEBHOOK_SECRET (a de teste e a de produção são diferentes)."
+    );
   }
 
-  let order;
-  try {
-    order = await readOrder(uid, orderId);
-  } catch (err) {
-    console.error("Falha ao ler o pedido:", err);
-    return jsonResponse({ error: "order_read_failed" }, 500);
-  }
-
-  if (!order) {
-    console.error("Pedido não encontrado:", referencia);
-    return jsonResponse({ error: "order_not_found" }, 404);
-  }
-
-  // Confere o valor. Protege contra uma cobrança adulterada ter sido paga
-  // por um valor menor que o do pedido.
-  const pago = Number(payment.transaction_amount || 0);
-  const esperado = Number(order.total || 0);
-  if (payment.status === "approved" && pago + 0.01 < esperado) {
-    console.error(`Valor pago (${pago}) menor que o do pedido (${esperado}).`);
-    await patchOrder(uid, orderId, {
-      paymentAlert: `Pago ${pago} para um pedido de ${esperado}`,
-      paymentId,
-    });
-    return jsonResponse({ error: "amount_mismatch" }, 200);
-  }
-
-  const dados = {
-    paymentId,
-    paymentStatus: payment.status,
-    paymentMethod: payment.payment_type_id || "",
-    paidAt: payment.date_approved || null,
-  };
-
-  // O Mercado Pago reenvia o mesmo aviso várias vezes. Só agimos na
-  // transição — sem isso, o estoque seria baixado a cada reenvio.
-  const jaEstavaPago = order.status && order.status !== "pending";
-
-  if (payment.status === "approved" && !jaEstavaPago) {
-    const problemas = await decrementStock(order.items || []);
-    await patchOrder(uid, orderId, {
-      ...dados,
-      status: "paid",
-      ...(problemas.length > 0 ? { stockAlert: problemas.join(", ") } : {}),
-    });
-    console.log(`Pedido ${order.orderNumber || orderId} confirmado como pago.`);
-
-    // O aviso sai daqui, e não do carrinho, porque aqui é o único ponto onde
-    // se sabe que o dinheiro entrou. Avisar na criação do pedido encheria o
-    // seu Telegram de carrinhos abandonados.
-    await sendTelegram(montarAviso(order, payment, problemas));
-
-    return jsonResponse({ updated: "paid" });
-  }
-
-  // Recusado ou estornado: registramos, mas não mexemos no status. Quem
-  // decide encerrar o pedido é você, no painel.
-  await patchOrder(uid, orderId, dados);
-  return jsonResponse({ updated: payment.status });
+  return jsonResponse({ resultado, status: statusPedido });
 }

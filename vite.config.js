@@ -9,6 +9,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 const API_ROUTES = {
   '/api/mp-create-preference': 'mp-create-preference',
   '/api/mp-webhook': 'mp-webhook',
+  '/api/mp-sync-order': 'mp-sync-order',
   '/api/mp-status': 'mp-status',
   '/api/notify-order': 'notify-order',
   '/api/shipping-quote': 'shipping-quote',

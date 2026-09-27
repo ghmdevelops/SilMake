@@ -110,13 +110,14 @@ export async function patchOrder(uid, orderId, changes) {
   return res.json();
 }
 
-// Baixa o estoque dos itens do pedido.
+// Move o estoque dos itens do pedido. `sinal` é -1 para baixar (venda) e
+// +1 para devolver (estorno).
 //
 // LIMITAÇÃO: a API REST do Firebase não tem transação, então isto é um
 // ler-calcular-gravar. Dois pagamentos confirmados no mesmo instante para o
 // último item poderiam se atropelar. No volume de uma loja pequena o risco é
-// baixo, e o painel mostra o estoque real para você conferir.
-export async function decrementStock(items = []) {
+// baixo, e o painel mostra o estoque real para conferir.
+async function moveStock(items, sinal) {
   const problemas = [];
 
   for (const item of items) {
@@ -130,8 +131,10 @@ export async function decrementStock(items = []) {
       // null/ausente = produto sem controle de estoque. Não é problema.
       if (typeof atual !== "number") continue;
 
-      const novo = Math.max(0, atual - quantity);
-      if (atual < quantity) problemas.push(item.name || item.id);
+      // Só na venda: avisa que o pedido levou mais do que havia registrado.
+      if (sinal < 0 && atual < quantity) problemas.push(item.name || item.id);
+
+      const novo = Math.max(0, atual + sinal * quantity);
 
       await fetch(dbUrl(`products/${item.id}/stock`), {
         method: "PUT",
@@ -139,10 +142,24 @@ export async function decrementStock(items = []) {
         body: JSON.stringify(novo),
       });
     } catch (err) {
-      console.error(`Erro ao baixar estoque de ${item.name || item.id}:`, err);
+      console.error(`Erro ao mover estoque de ${item.name || item.id}:`, err);
       problemas.push(item.name || item.id);
     }
   }
 
   return problemas;
+}
+
+// Venda confirmada: tira do estoque.
+export function decrementStock(items = []) {
+  return moveStock(items, -1);
+}
+
+// Estorno ou contestação: devolve ao estoque.
+//
+// Sem isto, um estorno deixava o inventário errado em silêncio — o produto
+// voltava para a prateleira mas continuava contado como vendido, e a loja
+// deixava de oferecer algo que tinha.
+export function restoreStock(items = []) {
+  return moveStock(items, 1);
 }

@@ -19,3 +19,24 @@ const MEIOS = {
 export function paymentMethodLabel(paymentType) {
   return MEIOS[paymentType] || paymentType || "meio não informado";
 }
+
+// Situações do pagamento no Mercado Pago, traduzidas para quem lê.
+//
+// Importa mostrar isso para a cliente: um pedido "pendente" porque o Pix não
+// foi pago e um pendente porque o cartão foi recusado pedem ações diferentes
+// dela — e sem essa distinção ela só vê "pendente" e não sabe o que fazer.
+const SITUACOES = {
+  pending: { texto: "Aguardando pagamento", tom: "espera" },
+  in_process: { texto: "Pagamento em análise", tom: "espera" },
+  authorized: { texto: "Pagamento autorizado", tom: "espera" },
+  approved: { texto: "Pagamento aprovado", tom: "ok" },
+  rejected: { texto: "Pagamento recusado", tom: "ruim" },
+  cancelled: { texto: "Pagamento cancelado", tom: "ruim" },
+  refunded: { texto: "Pagamento estornado", tom: "ruim" },
+  charged_back: { texto: "Pagamento contestado", tom: "ruim" },
+  in_mediation: { texto: "Pagamento em disputa", tom: "ruim" },
+};
+
+export function paymentStatusInfo(status) {
+  return SITUACOES[status] || null;
+}

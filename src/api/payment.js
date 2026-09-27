@@ -61,6 +61,26 @@ export function takePendingPurchase() {
   return dados;
 }
 
+// Pede ao servidor que confira, na API do Mercado Pago, se este pedido foi
+// pago — e atualize se foi.
+//
+// É a rede de segurança do webhook. Se o aviso automático não chegar (rede,
+// assinatura, variável faltando), o pedido ainda se resolve. O status vem
+// sempre do Mercado Pago; o navegador só informa qual pedido conferir.
+export async function syncOrderPayment({ uid, orderId }) {
+  try {
+    const res = await fetch("/api/mp-sync-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uid, orderId }),
+    });
+    if (!res.ok) return { error: `http_${res.status}` };
+    return res.json();
+  } catch {
+    return { error: "rede" };
+  }
+}
+
 // Devolve { checkoutUrl } ou { error }. Nunca lança: uma falha aqui não pode
 // perder o pedido, que já está salvo no Firebase.
 export async function startPayment({ uid, orderId }) {

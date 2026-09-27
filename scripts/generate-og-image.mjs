@@ -7,6 +7,7 @@
 // recortado; sem imagem nenhuma o link vira um retângulo de texto cinza, que
 // quase ninguém clica.
 import sharp from "sharp";
+import { existsSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -41,15 +42,11 @@ const svg = `
   <rect width="${W}" height="${H}" fill="url(#lilas)"/>
 
   <g font-family="Poppins, Segoe UI, Arial, sans-serif" text-anchor="middle">
-    <text x="${W / 2}" y="290" font-size="108" font-weight="800" letter-spacing="-3">
-      <tspan fill="#16161c">Sil</tspan><tspan fill="#ec6f9b">Beauty</tspan>
-    </text>
-
-    <text x="${W / 2}" y="360" font-size="30" font-weight="500" fill="#6b6b76" letter-spacing="9">
+    <text x="${W / 2}" y="420" font-size="30" font-weight="500" fill="#6b6b76" letter-spacing="9">
       BELEZA E CUIDADO
     </text>
 
-    <text x="${W / 2}" y="452" font-size="34" font-weight="500" fill="#4a4a55">
+    <text x="${W / 2}" y="500" font-size="34" font-weight="500" fill="#4a4a55">
       Maquiagem, skincare e perfumaria
     </text>
   </g>
@@ -60,9 +57,27 @@ const svg = `
 `;
 
 async function run() {
+  const logo = resolve(publicDir, "logo.png");
+  if (!existsSync(logo)) {
+    console.error("Falta public/logo.png. Rode antes: node scripts/prepare-logo.mjs");
+    process.exit(1);
+  }
+
+  // O logo é composto por cima do fundo, em vez de embutido no SVG: assim a
+  // arte usa o arquivo real da marca, e não uma reconstrução em texto que
+  // sairia diferente do logo de verdade.
+  const marca = await sharp(logo).resize({ height: 300 }).png().toBuffer();
+  // A posição é calculada, não delegada ao "gravity": o sharp não aceita as
+  // duas formas juntas, e aqui precisamos centralizar na horizontal mas
+  // fixar a altura.
+  const { width: larguraMarca } = await sharp(marca).metadata();
+
   // JPEG em vez de PNG: as redes sociais recomendam abaixo de 300 KB, e um
   // PNG dessa dimensão passaria de 1 MB.
   await sharp(Buffer.from(svg))
+    .composite([
+      { input: marca, top: 80, left: Math.round((W - larguraMarca) / 2) },
+    ])
     .jpeg({ quality: 90 })
     .toFile(resolve(publicDir, "og-image.jpg"));
 
